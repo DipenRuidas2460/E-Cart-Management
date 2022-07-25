@@ -20,19 +20,15 @@ const isValidBody = function (y) {
 
 const isValidEmail = function (y) {
 
-    let emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    let emailRegex = /^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/
     if (emailRegex.test(y)) return true
 }
 
 const isValidMobile = function (y) {
-    let mobileRegex = /^([+]\d{2})?\d{10}$/
+    let mobileRegex = /((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}/ 
     if (mobileRegex.test(y)) return true
 }
 
-const isValidPassword = function (y) {
-    let passwordRegex = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&-]*).{8,15}$/
-    if (passwordRegex.test(y)) return true
-}
 
 
 
@@ -41,4 +37,4 @@ module.exports.isValidBody = isValidBody
 module.exports.isValid = isValid
 module.exports.isValidEmail = isValidEmail
 module.exports.isValidMobile = isValidMobile
-module.exports.isValidPassword = isValidPassword
+

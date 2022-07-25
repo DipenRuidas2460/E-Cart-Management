@@ -1,51 +1,64 @@
+const userModel = require("../models/userModel");
+const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const bookModel = require("../models/bookModel")
-const Validator = require("../Validator/validation")
 
-const Authenticate = function (req, res, next) {
+
+
+
+const authenticate = function (req, res, next) {
     try {
         let token = req.headers["x-api-key"];
-        if (!token) return res.status(401).send({ status: false, msg: "token must be present in the request header" });
+        if (!token) token = req.headers["x-Api-key"];
+        if (!token) { return res.status(400).send({ status: false, message: "token must be present" }) }
 
-        jwt.verify(token, "project_3",function(err,decodedToken){
-            if(err)  return res.status(401).send({ status: false, msg: "token is not valid" });
+        const decoded = jwt.decode(token);
+        if (!decoded) {
+            return res.status(401).send({ status: false, message: "Invalid authentication token in request headers ⚠️" })
+        }
 
-            req.newUser = decodedToken.userId 
+        jwt.verify(token, "Functionup-Radon", function (err, decoded) {
+            if (err) {
+                return res.status(401).send({ status: false, message: "invalid token" })
+            } else {
+                req.body.tokenId = decoded.userId
+                return next();
+            }
         });
-        next()
     } catch (err) {
-        res.status(500).send({ status: false, msg: err.message })
-    }
+    return res.status(500).send({ message: "Error", error: err.message });
 }
+};
 
-
-const Authorisation = async function (req, res, next) {
+const authorize = async function (req, res, next) {
     try {
-        let userLoggedIn = req.newUser
+        let token = req.headers["x-api-key"];
+        if (!token) token = req.headers["x-Api-key"];
+        if (!token) { return res.status(400).send({ status: false, message: "token must be present" }) };
 
-        let bookId = req.params.bookId
-        if (bookId) {
-            // book update or delete 
-            if(!Validator.isValidObjectId(bookId)) return res.status(400).send({ status: false, message: "bookId is not valid" })
-            
-            let userId = await bookModel.findOne({ _id: bookId }).select({ userId: 1, _id: 0 })
+        let decodedToken = jwt.verify(token, "Functionup-Radon");
+        let userLoggedIn = decodedToken.userId;
 
-            if(!userId) return res.status(400).send({ status: false, msg: 'Please enter valid book ID' })
-            let newAuth = userId.userId
-            if (newAuth != userLoggedIn) return res.status(403).send({ status: false, msg: 'User logged is not allowed to modify the requested users data' })
-        }
-        else {
-            // book creation
-            let requestUser = req.body.userId
-            if(!requestUser)  return res.status(400).send({ status: false, message: "Please enter userId" })
-            if(!Validator.isValidObjectId(requestUser)) return res.status(400).send({ status: false, message: "userId is not valid" })
-            if (requestUser != userLoggedIn) return res.status(403).send({ status: false, msg: 'User logged is not allowed to modify the requested users data' })
-        }
-        next()
+        let bookToBeModified = req.params.bookId
+
+        if (!bookToBeModified) return res.status(400).send({ status: false, message: "Book Id must be present in params" })
+        if (!mongoose.isValidObjectId(bookToBeModified)) return res.status(400).send({ status: false, message: "Invalid bookId" })
+
+        let newUserId = await bookModel.findById({_id:bookToBeModified}).select("userId");
+
+        if (!newUserId) return res.status(400).send({ status: false, message: "Please use correct bookId" })
+
+        let user = newUserId.userId
+
+        if (user != userLoggedIn) {
+            return res.status(403).send({ status: false, message: "User loggedIn is not allowed to modify the requested  data" })
+        };
+
+        next();
+
     } catch (err) {
-        res.status(500).send({ status: false, msg: err.message })
+        res.status(500).send({ message: "Error", error: err.message });
     }
-}
+};
 
-module.exports.Authorisation = Authorisation
-module.exports.Authenticate = Authenticate
+module.exports.authenticate = authenticate;
+module.exports.authorize = authorize;
