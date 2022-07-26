@@ -8,7 +8,7 @@ router.post("/register",userController.createUser)
 
 router.post("/login",userController.loginUser)
 
-router.get("/user/:userId/profile",middleWare.authenticate,userController.getProfile)
+router.get("/user/:userId/profile",middleWare.authenticate,middleWare.authorize,userController.getProfile)
 
 router.put("/user/:userId/profile",middleWare.authenticate,middleWare.authorize,userController.updateUser)
 

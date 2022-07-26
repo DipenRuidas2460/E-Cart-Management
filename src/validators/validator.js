@@ -1,10 +1,3 @@
-const mongoose = require('mongoose');
-
-const isValidObjectId = function (x) {
-    return mongoose.Types.ObjectId.isValid(x);
-}
-
-
 const isValid = function (x) {
     let strRegex = /^[a-zA-Z,\-.\s]*$/
     if (typeof x === 'undefined' || x === null) return false
@@ -30,9 +23,6 @@ const isValidMobile = function (y) {
 }
 
 
-
-
-module.exports.isValidObjectId = isValidObjectId
 module.exports.isValidBody = isValidBody
 module.exports.isValid = isValid
 module.exports.isValidEmail = isValidEmail
