@@ -6,7 +6,7 @@ const isValidObjectId = function (x) {
 
 
 const isValid = function (x) {
-    let strRegex = /^\w[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$/
+    let strRegex = /^[a-zA-Z,\-.\s]*$/
     if (typeof x === 'undefined' || x === null) return false
     if (typeof x != "string" ) return false
     if (typeof x === 'string' && x.trim().length === 0) return false
@@ -25,7 +25,7 @@ const isValidEmail = function (y) {
 }
 
 const isValidMobile = function (y) {
-    let mobileRegex = /((\+*)((0[ -]*)*|((91 )*))((\d{12})+|(\d{10})+))|\d{5}([- ]*)\d{6}/ 
+    let mobileRegex = /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/
     if (mobileRegex.test(y)) return true
 }
 

@@ -7,58 +7,61 @@ const jwt = require("jsonwebtoken");
 
 const authenticate = function (req, res, next) {
     try {
-        let token = req.headers["x-api-key"];
-        if (!token) token = req.headers["x-Api-key"];
-        if (!token) { return res.status(400).send({ status: false, message: "token must be present" }) }
+        const token = req.header('Authorization', 'Bearer Token')
+        if (!token) { return res.status(403).send({ status: false, message: `Missing authentication token in request` }) }
+        let splitToken = token.split(' ')
+        let decodedToken = jwt.decode(splitToken[1])
+        if (!decodedToken) { return res.status(403).send({ status: false, message: `Invalid authentication token in request ` }) }
 
-        const decoded = jwt.decode(token);
-        if (!decoded) {
-            return res.status(401).send({ status: false, message: "Invalid authentication token in request headers ⚠️" })
-        }
-
-        jwt.verify(token, "Functionup-Radon", function (err, decoded) {
+        jwt.verify(splitToken[1], "project_5", function (err) {
             if (err) {
-                return res.status(401).send({ status: false, message: "invalid token" })
-            } else {
-                req.body.tokenId = decoded.userId
-                return next();
-            }
+                return res.status(401).send({ status: false, message: "invalid token" })}
+            // } else {
+            //     // req.body.tokenId = decoded.userId
+            //     return next();
+            // }
         });
+
+        let newUser = decodedToken.userId
+
+        next()
     } catch (err) {
-    return res.status(500).send({ message: "Error", error: err.message });
+        res.status(500).send({ status: false, msg: err.message })
+    }
 }
-};
+
+
+
 
 const authorize = async function (req, res, next) {
     try {
-        let token = req.headers["x-api-key"];
-        if (!token) token = req.headers["x-Api-key"];
-        if (!token) { return res.status(400).send({ status: false, message: "token must be present" }) };
+        const token = req.header('Authorization', 'Bearer Token')
+        if (!token) { return res.status(403).send({ status: false, message: `Missing authentication token in request` }) }
+        let splitToken = token.split(' ')
+        let decodedToken = jwt.verify(splitToken[1],"project_5")
+        let userLoggedIn = decodedToken.userId
+        let userToBeModified = req.params.userId
+        if (!mongoose.isValidObjectId(userToBeModified)) return res.status(400).send({ status: false, message: "Invalid userId" })
 
-        let decodedToken = jwt.verify(token, "Functionup-Radon");
-        let userLoggedIn = decodedToken.userId;
+        let newUserId = await userModel.findById({ _id: userToBeModified })
 
-        let bookToBeModified = req.params.bookId
-
-        if (!bookToBeModified) return res.status(400).send({ status: false, message: "Book Id must be present in params" })
-        if (!mongoose.isValidObjectId(bookToBeModified)) return res.status(400).send({ status: false, message: "Invalid bookId" })
-
-        let newUserId = await bookModel.findById({_id:bookToBeModified}).select("userId");
-
-        if (!newUserId) return res.status(400).send({ status: false, message: "Please use correct bookId" })
+        if (!newUserId) return res.status(404).send({ status: false, message: "No such User Present" })
 
         let user = newUserId.userId
 
         if (user != userLoggedIn) {
-            return res.status(403).send({ status: false, message: "User loggedIn is not allowed to modify the requested  data" })
+            return res.status(403).send({ status: false, message: "You are not authorized to do this" })
         };
 
         next();
 
     } catch (err) {
+        console.log(err)
         res.status(500).send({ message: "Error", error: err.message });
     }
 };
+
+
 
 module.exports.authenticate = authenticate;
 module.exports.authorize = authorize;

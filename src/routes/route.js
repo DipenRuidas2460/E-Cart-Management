@@ -6,25 +6,11 @@ const router = express.Router();
 
 router.post("/register",userController.createUser)
 
-// router.post("/login",userController.loginUser)
+router.post("/login",userController.loginUser)
 
+router.get("/user/:userId/profile",middleWare.authenticate,userController.getProfile)
 
-// router.post("/books", middleWare.authenticate, bookController.createBook)
-
-// router.get("/books", middleWare.authenticate, bookController.getBooks)
-
-// router.get("/books/:bookId",middleWare.authenticate,bookController.getById)
-
-// router.put("/books/:bookId",middleWare.authenticate,middleWare.authorize,bookController.updateById)
-
-// router.delete("/books/:bookId",middleWare.authenticate,middleWare.authorize,bookController.deleteBookById)
-
-
-// router.post("/books/:bookId/review",reviewController.createReview)
-
-// router.put("/books/:bookId/review/:reviewId",reviewController.updateReview)
-
-// router.delete("/books/:bookId/review/:reviewId",reviewController.deleteReview)
+router.put("/user/:userId/profile",middleWare.authenticate,middleWare.authorize,userController.updateUser)
 
 
 module.exports = router
