@@ -19,9 +19,9 @@ const createUser = async function (req, res) {
         let files = req.files
 
         if (!files || files.length === 0) return res.status(400).send({ status: false, message: "No data found" })
-        if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i.test(data.profileImage)) return res.status(400).send({ status: false, message: "Please provide profileImage in correct format like jpeg,png,jpg,gif,bmp etc" })
         let uploadedFileURL = await aws.uploadFile(files[0])
         data.profileImage = uploadedFileURL
+        if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i.test(data.profileImage)) return res.status(400).send({ status: false, message: "Please provide profileImage in correct format like jpeg,png,jpg,gif,bmp etc" })
 
 
         let { fname, lname, email, phone, password, address } = data
@@ -94,7 +94,8 @@ const createUser = async function (req, res) {
 
             if (!(address.shipping.pincode)) return res.status(400).send({ status: false, message: "pincode can't be empty" })
             else {
-                if (!(/^[1-9][0-9]{5}$/.test(address.shipping.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                let pinCode = parseInt(address.shipping.pincode)
+                if (!(/^[1-9][0-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
 
             }
         }
@@ -113,7 +114,8 @@ const createUser = async function (req, res) {
 
             if (!address.billing.pincode) return res.status(400).send({ status: false, message: "pincode can't be empty" })
             else {
-                if (!(/^[1-9][0-9]{5}$/.test(address.billing.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                let pinCode = parseInt(address.billing.pincode)
+                if (!(/^[1-9][0-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
 
             }
 
@@ -209,6 +211,9 @@ const updateUser = async function (req, res) {
 
         if (!(Object.keys(data).length || files)) return res.status(400).send({ status: false, msg: "Please provide some data for update" })
 
+        if (!userId) return res.status(400).send({ status: false, msg: "Please provide userId in params" })
+
+
         if (!mongoose.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, msg: "userId is not valid" })
         }
@@ -297,8 +302,9 @@ const updateUser = async function (req, res) {
                 }
 
                 if (address.shipping.pincode) {
-                    if (!(/^[1-9][0-9]{5}$/.test(address.shipping.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
-                    update["address.shipping.pincode"] = address.shipping.pincode
+                    let pinCode = parseInt(address.shipping.pincode)
+                    if (!(/^[1-9][0-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                    update["address.shipping.pincode"] = pinCode
                 }
             }
             if (address.billing) {
@@ -316,8 +322,9 @@ const updateUser = async function (req, res) {
                 }
 
                 if (address.billing.pincode) {
-                    if (!(/^[1-9][0-9]{5}$/.test(address.billing.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
-                    update["address.billing.pincode"] = address.billing.pincode
+                    let pinCode = parseInt(address.billing.pincode)
+                    if (!(/^[1-9][0-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                    update["address.billing.pincode"] = pinCode
                 }
             }
 
