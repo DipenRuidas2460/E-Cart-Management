@@ -1,9 +1,9 @@
 const isValid = function (x) {
-    //let strRegex = /^[a-zA-Z,\-.\s]*$/
+    let strRegex = /^[a-zA-Z,\-.\s]*$/
     if (typeof x === 'undefined' || x === null) return false
     if (typeof x != "string" ) return false
     if (typeof x === 'string' && x.trim().length === 0) return false
-    //if (!strRegex.test(x)) return false
+    if (!strRegex.test(x)) return false
     return true
 }
 
@@ -21,15 +21,7 @@ const isValidMobile = function (y) {
     let mobileRegex = /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/
     if (mobileRegex.test(y)) return true
 }
-// const isValidPrice=function(y){
-//     let priceRegex=/^(\d*([.,](?=\d{3}))?\d+)+((?!\2)[.,]\d\d)?$/
-//     if(priceRegex.test(y)) return true
-// }
 
-
-// const isValidString = (String) => {
-//     return /\d/.test(String)
-// }
 
 const isValidPrice = (price) => {
     return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price)
