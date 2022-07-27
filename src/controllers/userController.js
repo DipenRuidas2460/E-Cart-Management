@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const createUser = async function (req, res) {
     try {
         let userData = req.body;
-        if (!validators.isValidBody(userData)) { return res.status(400).send({ status: false, message: "UserData can't be empty" }) }
+        if (!Object.keys(userData).length) { return res.status(400).send({ status: false, message: "UserData can't be empty" }) }
 
         let files = req.files
 
@@ -62,6 +62,8 @@ const createUser = async function (req, res) {
 
         // Address Validation:-
 
+        // console.log(userData["address"])
+
         if (!address) return res.status(400).send({ status: false, message: "Address can't be empty" })
 
         try {
@@ -70,15 +72,15 @@ const createUser = async function (req, res) {
             return res.status(400).send({status:false,message:"Please enter Pincode in correct format"})
         }
 
-        if (!validators.isValidBody(address)) { return res.status(400).send({ status: false, message: "Please provide somedata in address" }); }
+        if (!Object.keys(address).length) { return res.status(400).send({ status: false, message: "Please provide somedata in address" }); }
 
-        if (!(address.shipping)) return res.status(400).send({ status: false, message: "Shipping Address can't be empty" })
-        if (!validators.isValidBody(address.shipping)) { return res.status(400).send({ status: false, message: "Please provide somedata in Shipping address" }); }
+        if (!address.shipping) return res.status(400).send({ status: false, message: "Shipping Address can't be empty" })
+        if (!Object.keys(address.shipping).length) { return res.status(400).send({ status: false, message: "Please provide somedata in Shipping address" }); }
 
         else {
             if (!(address.shipping.street)) return res.status(400).send({ status: false, message: "street can't be empty" })
-            if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
-            if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
+            if ((typeof (address.shipping.street) !== "string")||(address.shipping.street=="")) return res.status(400).send({ status: false, message: "Provide street name in string format or enter some data" })
+            if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.shipping.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
 
             if (!(address.shipping.city)) return res.status(400).send({ status: false, message: "city can't be empty" })
             if (!validators.isValid(address.shipping.city)) return res.status(400).send({ status: false, message: "city address is not valid address" });
@@ -93,11 +95,11 @@ const createUser = async function (req, res) {
 
 
         if (!address.billing) return res.status(400).send({ status: false, message: "Billing Address can't be empty" })
-        if (!validators.isValidBody(address.billing)) { return res.status(400).send({ status: false, message: "Please provide somedata in Billing address" }); }
+        if (!Object.keys(address.billing).length) { return res.status(400).send({ status: false, message: "Please provide somedata in Billing address" }); }
 
         else {
             if (!address.billing.street) return res.status(400).send({ status: false, message: "street can't be empty" })
-            if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
+            if ((typeof (address.billing.street) !== "string")||(address.billing.street=="")) return res.status(400).send({ status: false, message: "Provide street name in string format or enter some data" })
             if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
 
             if (!address.billing.city) return res.status(400).send({ status: false, message: "city can't be empty" })
@@ -127,7 +129,7 @@ const createUser = async function (req, res) {
 const loginUser = async function (req, res) {
     try {
         let data = req.body
-        if (!validators.isValidBody(data)) return res.status(400).send({ status: false, message: "Please enter details" })
+        if (!Object.keys(data).length) return res.status(400).send({ status: false, message: "Please enter details" })
 
         const { email, password } = data
 
@@ -172,6 +174,8 @@ const loginUser = async function (req, res) {
 const getProfile = async function (req, res) {
     try {
         const userId = req.params.userId
+
+        if(!userId) return res.status(400).send({ status: false, msg: "Please provide userId in params" })
 
         if (!mongoose.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, msg: "Invalid userId in params" })
@@ -264,10 +268,12 @@ const updateUser = async function (req, res) {
                 return res.status(400).send({status:false,message:"Please enter Pincode in correct format"})
             }
             
-            if (!validators.isValidBody(address)) return res.status(400).send({ status: false, message: "Address can't be empty" });
+            if (!Object.keys(address).length) return res.status(400).send({ status: false, message: "Address can't be empty" });
             if (address.shipping) {
+                if (!Object.keys(address.shipping).length) { return res.status(400).send({ status: false, message: "Please provide somedata in Shipping address" }); }
+
                 if (address.shipping.street) {
-                    if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
+                    if ((typeof (address.shipping.street) !== "string")|| (address.shipping.street=="")) return res.status(400).send({ status: false, message: "Provide street name in string formatn or enter some data" })
                     if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.shipping.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
                     update["address.shipping.street"] = address.shipping.street
                 }
@@ -283,8 +289,10 @@ const updateUser = async function (req, res) {
                 }
             }
             if (address.billing) {
+                if (!Object.keys(address.billing).length) { return res.status(400).send({ status: false, message: "Please provide somedata in Billing address" }); }
+
                 if (address.billing.street) {
-                    if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
+                    if ((typeof (address.billing.street) !== "string")|| address.billing.street=="") return res.status(400).send({ status: false, message: "Provide street name in string format or Enter some data" })
                     if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
                     update["address.billing.street"] = address.billing.street
                 }

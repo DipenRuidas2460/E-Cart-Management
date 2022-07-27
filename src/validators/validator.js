@@ -7,9 +7,6 @@ const isValid = function (x) {
     return true
 }
 
-const isValidBody = function (y) {
-    return Object.keys(y).length > 0
-}
 
 const isValidEmail = function (y) {
 
@@ -23,7 +20,6 @@ const isValidMobile = function (y) {
 }
 
 
-module.exports.isValidBody = isValidBody
 module.exports.isValid = isValid
 module.exports.isValidEmail = isValidEmail
 module.exports.isValidMobile = isValidMobile
