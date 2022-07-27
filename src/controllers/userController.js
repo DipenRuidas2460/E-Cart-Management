@@ -12,9 +12,8 @@ const createUser = async function (req, res) {
 
         let files = req.files
 
-        if (!files || files.length === 0) {
-            return res.status(400).send({ status: false, message: "No data found" })
-        }
+        if (!files || files.length === 0) return res.status(400).send({ status: false, message: "No data found" })
+        
         let uploadedFileURL = await aws.uploadFile(files[0])
         userData.profileImage = uploadedFileURL
 
@@ -65,40 +64,49 @@ const createUser = async function (req, res) {
 
         if (!address) return res.status(400).send({ status: false, message: "Address can't be empty" })
 
-        if (!validators.isValidBody(address)) { return res.status(400).send({ status: false, message: "Address can't be empty" }); }
+        try {
+            if (typeof address === "string") { address = JSON.parse(address) }
+        } catch (error) {
+            return res.status(400).send({status:false,message:"Please enter Pincode in correct format"})
+        }
 
+        if (!validators.isValidBody(address)) { return res.status(400).send({ status: false, message: "Please provide somedata in address" }); }
 
-        if (!userData.address.shipping) return res.status(400).send({ status: false, message: "Shipping Address can't be empty" })
+        if (!(address.shipping)) return res.status(400).send({ status: false, message: "Shipping Address can't be empty" })
+        if (!validators.isValidBody(address.shipping)) { return res.status(400).send({ status: false, message: "Please provide somedata in Shipping address" }); }
+
         else {
-            if (!userData.address.shipping.street) return res.status(400).send({ status: false, message: "street can't be empty" })
-            if (typeof (userData.address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
-            if (!/^[#.0-9a-zA-Z\s,-]+$/.test(userData.address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
+            if (!(address.shipping.street)) return res.status(400).send({ status: false, message: "street can't be empty" })
+            if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
+            if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
 
-            if (!userData.address.shipping.city) return res.status(400).send({ status: false, message: "city can't be empty" })
-            if (!validators.isValid(userData.address.shipping.city)) return res.status(400).send({ status: false, message: "city address is not valid address" });
+            if (!(address.shipping.city)) return res.status(400).send({ status: false, message: "city can't be empty" })
+            if (!validators.isValid(address.shipping.city)) return res.status(400).send({ status: false, message: "city address is not valid address" });
 
 
-            if (!userData.address.shipping.pincode) return res.status(400).send({ status: false, message: "pincode can't be empty" })
+            if (!(address.shipping.pincode)) return res.status(400).send({ status: false, message: "pincode can't be empty" })
             else {
-                if (!(/^[1-9][0-9]{5}$/.test(userData.address.shipping.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
-                if ((userData.address.shipping.pincode).includes(" ")) return res.status(400).send({ status: false, message: "Please remove any empty spaces from Address pincode" });
+                if (!(/^[1-9][0-9]{5}$/.test(address.shipping.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                
             }
         }
 
 
-        if (!userData.address.billing) return res.status(400).send({ status: false, message: "Billing Address can't be empty" })
+        if (!address.billing) return res.status(400).send({ status: false, message: "Billing Address can't be empty" })
+        if (!validators.isValidBody(address.billing)) { return res.status(400).send({ status: false, message: "Please provide somedata in Billing address" }); }
+
         else {
-            if (!userData.address.billing.street) return res.status(400).send({ status: false, message: "street can't be empty" })
-            if (typeof (userData.address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
-            if (!/^[#.0-9a-zA-Z\s,-]+$/.test(userData.address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
+            if (!address.billing.street) return res.status(400).send({ status: false, message: "street can't be empty" })
+            if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
+            if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
 
-            if (!userData.address.billing.city) return res.status(400).send({ status: false, message: "city can't be empty" })
-            if (!validators.isValid(userData.address.billing.city)) return res.status(400).send({ status: false, message: "city address is not valid address" });
+            if (!address.billing.city) return res.status(400).send({ status: false, message: "city can't be empty" })
+            if (!validators.isValid(address.billing.city)) return res.status(400).send({ status: false, message: "city address is not valid address" });
 
-            if (!userData.address.billing.pincode) return res.status(400).send({ status: false, message: "pincode can't be empty" })
+            if (!address.billing.pincode) return res.status(400).send({ status: false, message: "pincode can't be empty" })
             else {
-                if (!(/^[1-9][0-9]{5}$/.test(userData.address.billing.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
-                if ((userData.address.billing.pincode).includes(" ")) return res.status(400).send({ status: false, message: "Please remove any empty spaces from Address pincode" });
+                if (!(/^[1-9][0-9]{5}$/.test(address.billing.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                
             }
 
 
@@ -111,6 +119,7 @@ const createUser = async function (req, res) {
 
 
     } catch (err) {
+        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 };
@@ -188,13 +197,11 @@ const updateUser = async function (req, res) {
         let userId = req.params.userId
         let files = req.files
 
-        let { fname, lname, email, phone, password, profileImage, address } = data
+        let { fname, lname, email, phone, password, address } = data
 
         let update = {}
 
-        if (Object.keys(data).length == 0) {
-            return res.status(400).send({ status: false, msg: "Please provide some data for update" })
-        }
+        if (!(Object.keys(data).length || files)) return res.status(400).send({ status: false, msg: "Please provide some data for update" })
 
         if (!mongoose.isValidObjectId(userId)) {
             return res.status(400).send({ status: false, msg: "userId is not valid" })
@@ -242,50 +249,55 @@ const updateUser = async function (req, res) {
             password = protectedPassword
             update.password = password
         }
-        if(profileImage){
-            if (files && files.length > 0) {
-                if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i.test(files.profileImage)) return res.status(400).send({ status: false, message: "Please provide profileImage in correct format like jpeg,png,jpg,gif etc" })
-                let uploadedFileURL = await aws.uploadFile(files[0])
-                update.profileImage = uploadedFileURL
-            }
+        if (files && files.length > 0) {
+            if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i.test(data.profileImage)) return res.status(400).send({ status: false, message: "Please provide profileImage in correct format like jpeg,png,jpg,gif etc" })
+            let uploadedFileURL = await aws.uploadFile(files[0])
+            update.profileImage = uploadedFileURL
         }
-        
+
 
 
         if (address) {
+            try {
+                if (typeof address === "string") { address = JSON.parse(address) }
+            } catch (error) {
+                return res.status(400).send({status:false,message:"Please enter Pincode in correct format"})
+            }
+            
             if (!validators.isValidBody(address)) return res.status(400).send({ status: false, message: "Address can't be empty" });
-            if (address.shipping.street) {
-                if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
-                if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.shipping.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
-                update.address.shipping.street = address.shipping.street
-            }
+            if (address.shipping) {
+                if (address.shipping.street) {
+                    if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
+                    if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.shipping.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
+                    update["address.shipping.street"] = address.shipping.street
+                }
 
-            if (address.shipping.city) {
-                if (!validators.isValid(address.shipping.city)) return res.status(400).send({ status: false, message: "Please enter Valid Shipping city address" })
-                update.address.shipping.city = address.shipping.city
-            }
+                if (address.shipping.city) {
+                    if (!validators.isValid(address.shipping.city)) return res.status(400).send({ status: false, message: "Please enter Valid Shipping city address" })
+                    update["address.shipping.city"] = address.shipping.city
+                }
 
-            if (address.shipping.pincode) {
-                if (!(/^[1-9][0-9]{5}$/.test(address.shipping.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
-                if ((address.shipping.pincode).includes(" ")) return res.status(400).send({ status: false, message: "Please remove any empty spaces from Address pincode" });
-                update.address.shipping.pincode = address.shipping.pincode
+                if (address.shipping.pincode) {
+                    if (!(/^[1-9][0-9]{5}$/.test(address.shipping.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                    update["address.shipping.pincode"] = address.shipping.pincode
+                }
             }
+            if (address.billing) {
+                if (address.billing.street) {
+                    if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
+                    if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
+                    update["address.billing.street"] = address.billing.street
+                }
 
-            if (address.billing.street) {
-                if (typeof (address.billing.street) !== "string") return res.status(400).send({ status: false, message: "Provide street name in string format" })
-                if (!/^[#.0-9a-zA-Z\s,-]+$/.test(address.billing.street)) return res.status(400).send({ status: false, message: "Street address is not valid address" });
-                update.address.billing.street = address.billing.street
-            }
+                if (address.billing.city) {
+                    if (!validators.isValid(address.billing.city)) return res.status(400).send({ status: false, message: "Please enter Valid billing city address" })
+                    update["address.billing.city"] = address.billing.city
+                }
 
-            if (address.billing.city) {
-                if (!validators.isValid(address.billing.city)) return res.status(400).send({ status: false, message: "Please enter Valid billing city address" })
-                update.address.billing.city = address.billing.city
-            }
-
-            if (address.billing.pincode) {
-                if (!(/^[1-9][0-9]{5}$/.test(address.billing.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
-                if ((address.billing.pincode).includes(" ")) return res.status(400).send({ status: false, message: "Please remove any empty spaces from Address pincode" });
-                update.address.billing.pincode = address.billing.pincode
+                if (address.billing.pincode) {
+                    if (!(/^[1-9][0-9]{5}$/.test(address.billing.pincode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                    update["address.billing.pincode"] = address.billing.pincode
+                }
             }
 
         }
@@ -294,6 +306,7 @@ const updateUser = async function (req, res) {
         return res.status(200).send({ status: true, message: "User profile updated", data: updatedUserProfile })
 
     } catch (err) {
+        console.log(err)
         return res.status(500).send({ status: false, msg: "Error", error: err.message })
     }
 }
