@@ -13,7 +13,7 @@ router.put("/user/:userId/profile",middleWare.authenticate,middleWare.authorize,
 /**********************************************[PRODUCT API]************************************************/
 router.post("/products",productController.createProduct)
 
-router.get("/products",productController.getProduct)
+router.get("/products",productController.getProductByQuery)
 
 router.get("/products/:productId",productController.getProductByParams)
 
