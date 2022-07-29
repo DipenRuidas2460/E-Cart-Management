@@ -7,8 +7,7 @@ const isValid = function (x) {
 
 const IsValidStr = function (x) {
     let strRegex = /^[a-zA-Z,\-.\s|]*$/
-    if (!strRegex.test(x)) return false
-    return true
+    if (strRegex.test(x)) return true
 }
 
 const isValidBody = function (y) {

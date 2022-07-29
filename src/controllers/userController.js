@@ -47,7 +47,7 @@ const createUser = async function (req, res) {
         if (!validators.isValidEmail(email)) return res.status(400).send({ status: false, message: "Email is invalid." })
         if ((email).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces in email" }); }
         const OldEmail = await userModel.findOne({ email })
-        if (OldEmail) return res.status(400).send({ status: false, message: "email already exists" })
+        if (OldEmail) return res.status(409).send({ status: false, message: "email already exists" })
 
         // phone Validation:-
 
@@ -56,7 +56,7 @@ const createUser = async function (req, res) {
         if (!validators.isValid(phone)) { return res.status(400).send({ status: false, message: "provide phone no. in string." }); }
         if ((phone).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces from phone number" }); }
         const uniqueMobile = await userModel.findOne({ phone })
-        if (uniqueMobile) return res.status(400).send({ status: false, message: "Phone number already exists." })
+        if (uniqueMobile) return res.status(409).send({ status: false, message: "Phone number already exists." })
 
         // password Validation:-
 
@@ -255,7 +255,7 @@ const updateUser = async function (req, res) {
             if (!validators.isValidEmail(email)) return res.status(400).send({ status: false, message: "Email is invalid." })
             if ((email).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces in email" }); }
             const OldEmail = await userModel.findOne({ email })
-            if (OldEmail) return res.status(400).send({ status: false, message: "email already exists" })
+            if (OldEmail) return res.status(409).send({ status: false, message: "email already exists" })
             update.email = email
 
         }
@@ -265,7 +265,7 @@ const updateUser = async function (req, res) {
             if (!validators.isValid(phone)) { return res.status(400).send({ status: false, message: "provide phone no. in string." }); }
             if ((phone).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces from phone number" }); }
             const uniqueMobile = await userModel.findOne({ phone })
-            if (uniqueMobile) return res.status(400).send({ status: false, message: "Phone number already exists." })
+            if (uniqueMobile) return res.status(409).send({ status: false, message: "Phone number already exists." })
             update.phone = phone
         }
 

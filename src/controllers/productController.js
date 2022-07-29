@@ -2,7 +2,7 @@ const productModel = require("../models/productModel")
 const validators = require("../validators/validator")
 const mongoose = require("mongoose")
 const aws = require('../aws/aws');
-const currencySymbol = require("currency-symbol-map")
+
 
 
 
@@ -19,7 +19,7 @@ const createProduct = async function (req, res) {
         if (!validators.isValid(title)) return res.status(400).send({ status: false, message: "Title is not valid string" });
         if (!validators.IsValidStr(title)) return res.status(400).send({ status: false, message: "Title is only alphabetical" });
         let productTitle = await productModel.findOne({ title })
-        if (productTitle) return res.status(400).send({ status: false, message: "Product title is already exists" })
+        if (productTitle) return res.status(409).send({ status: false, message: "Product title is already exists" })
 
         //DESCRIPTION
         if (!description) return res.status(400).send({ status: false, message: "Description is required" })
@@ -59,7 +59,7 @@ const createProduct = async function (req, res) {
         if (!files || files.length === 0) return res.status(400).send({ status: false, message: "Please add some file" })
         let uploadedFileURL = await aws.uploadFile(files[0])
         data.productImage = uploadedFileURL
-        if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png)$/i.test(data.productImage)) return res.status(400).send({ status: false, message: "Please provide profileImage in correct format like jpeg,png,jpg,gif,bmp etc" })
+        if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png|\.jfif)$/i.test(data.productImage)) return res.status(400).send({ status: false, message: "Please provide productImage in correct format like jpeg,png,jpg,gif,bmp etc" })
 
 
         //STYLE
@@ -78,7 +78,7 @@ const createProduct = async function (req, res) {
 
         if (!availableSizes) return res.status(400).send({ status: false, message: "AvailableSize is required" })
 
-        if (!(validators.isValid(availableSizes))) return res.status(400).send({ status: false, message: "Please provide availableSize" })
+        if (!(validators.isValid(availableSizes))) return res.status(400).send({ status: false, message: "Please provide availableSizes in string format" })
         if (availableSizes.toUpperCase().trim().split(",").map(value => validators.isValidEnum(value)).filter(item => item == false).length !== 0) {
             return res.status(400).send({ status: false, message: "Enum should be valid" })
         }
@@ -106,28 +106,32 @@ const getProductByQuery = async function (req, res) {
             if (!(validators.isValid(size))) {
                 return res.status(400).send({ status: false, msg: "Please provide availableSize" })
             }
-            if (size.toUpperCase().trim().split(",").map(value => validators.isValidEnum(value)).filter(item => item == false).length !== 0)
+            if (size.toUpperCase().trim().split(",").map(value => validators.isValidEnum(value)).filter(item => item == false).length !== 0) {
                 return res.status(400).send({ status: false, msg: "Enum should be valid" })
+            }
 
-            const availableSize = size.toUpperCase().trim().split(",").map(value => value.trim())
+            size = size.toUpperCase().trim().split(",").map(value => value.trim())
 
-            Get.availableSizes = availableSize
+            Get.availableSizes = { $in: `${size}` }
+
+            // if (size) {
+            //     size = size.toUpperCase().split(" ")
+            //     Get.availableSizes = { $in: size }
+            // }
         }
 
         // name validation//
 
         if (name) {
             if (!validators.isValid(name)) return res.status(400).send({ status: false, message: "Please enter correct name" })
-            Get.title = name
+            Get.title = { $regex: name, $options: 'i' }
         }
 
         //price validation //
         if (priceGreaterThan) {
             greater = parseInt(priceGreaterThan)
             if (typeof greater !== "number") return res.status(400).send({ status: false, message: "Please enter price in number" })
-            Get.price = {
-                $gt: `${greater}`
-            }
+            Get.price = { $gt: `${greater}` }
         }
 
         if (priceLessThan) {
@@ -138,8 +142,6 @@ const getProductByQuery = async function (req, res) {
             }
         }
 
-
-
         if (priceGreaterThan && priceLessThan) {
             greater = parseInt(priceGreaterThan)
             lesser = parseInt(priceLessThan)
@@ -148,13 +150,15 @@ const getProductByQuery = async function (req, res) {
 
         Get.isDeleted = false
 
+        console.log(Get)
+
         let result = await productModel.find(Get).sort({ price: 1 })
 
         if (Array.isArray(result) && result.length === 0) {
             return res.status(404).send({ status: false, message: 'No Product found' })
         }
 
-        res.status(200).send({ status: true,message:"Product found Successfully", data: result })
+        res.status(200).send({ status: true, message: "Product found Successfully", data: result })
 
 
     }
@@ -178,7 +182,7 @@ const getProductByParams = async function (req, res) {
             return res.status(404).send({ status: false, message: "Product not found" })
         }
 
-        res.status(200).send({ status: true, message:"Product Found successfully", data: data })
+        res.status(200).send({ status: true, message: "Product Found successfully", data: data })
     }
     catch (err) {
         console.log(err)
@@ -200,8 +204,8 @@ const updateProduct = async function (req, res) {
 
         if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "productId is not valid" })
 
-        const findUserProfile = await productModel.findById({ _id: productId })
-        if (!findUserProfile) return res.status(404).send({ status: false, message: "productId does not exists" })
+        const findProduct = await productModel.findById({ _id: productId })
+        if (!findProduct) return res.status(404).send({ status: false, message: "productId does not exists" })
 
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
 
@@ -213,7 +217,7 @@ const updateProduct = async function (req, res) {
             if (!validators.isValid(title)) return res.status(400).send({ status: false, message: "Title is not valid string" });
             if (!validators.IsValidStr(title)) return res.status(400).send({ status: false, message: "Title is only alphabetical" });
             let productTitle = await productModel.findOne({ title })
-            if (productTitle) return res.status(400).send({ status: false, message: "Product title is already exists" })
+            if (productTitle) return res.status(409).send({ status: false, message: "Product title is already exists" })
             update.title = title
         }
 
@@ -233,16 +237,16 @@ const updateProduct = async function (req, res) {
 
         if (currencyId) {
             if (!validators.isValid(currencyId)) return res.status(400).send({ status: false, message: "currencyId is not valid and It should be INR" });
-            if (currencyId != "INR") return res.status(400).send({ status: false, message: "currencyId should be INR" })
+            if (!(/INR/.test(currencyId))) return res.status(400).send({ status: false, message: "Currency Id of product should be in uppercase 'INR' format" });
+
             update.currencyId = currencyId
         }
 
         // Currerce format
         if (currencyFormat) {
-            if (!validators.isValid(currencyFormat)) {
-                currencyFormat = currencySymbol('INR')
-            }
-            currencyFormat = currencySymbol('INR')  //used currency symbol package to store INR symbol.
+            if (!validators.isValid(currencyFormat)) return res.status(400).send({ status: false, message: "Please provide Currency format in String" });
+            if (!(/₹/.test(currencyFormat))) return res.status(400).send({ status: false, message: "Currency format/symbol of product should be in '₹' " });
+
             update.currencyFormat = currencyFormat
         }
 
@@ -290,7 +294,6 @@ const updateProduct = async function (req, res) {
 
             const availableSize = availableSizes.toUpperCase().trim().split(",").map(value => value.trim()) //converting in array
             availableSizes = availableSize
-            // let findSize = await productModel.findById({_id:productId}).select({availableSize:1})
 
         }
 
