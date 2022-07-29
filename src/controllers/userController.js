@@ -155,10 +155,10 @@ const loginUser = async function (req, res) {
 
 
         const user = await userModel.findOne({ email: email })
-        if (!user) return res.status(400).send({ status: false, message: "enter correct email" })
+        if (!user) return res.status(404).send({ status: false, message: "enter correct email" })
         let checkPassword = user.password
         let matchUser = await bcrypt.compare(password, checkPassword)
-        if (!matchUser) return res.status(400).send({ status: false, message: "password does not match" })
+        if (!matchUser) return res.status(401).send({ status: false, message: "password does not match" })
 
 
         let token = jwt.sign({

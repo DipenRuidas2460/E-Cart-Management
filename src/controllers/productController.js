@@ -5,7 +5,6 @@ const aws = require('../aws/aws');
 
 
 
-
 const createProduct = async function (req, res) {
     try {
         let data = req.body;
@@ -58,9 +57,7 @@ const createProduct = async function (req, res) {
 
         if (!files || files.length === 0) return res.status(400).send({ status: false, message: "Please add some file" })
         let uploadedFileURL = await aws.uploadFile(files[0])
-        data.productImage = uploadedFileURL
-        if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png|\.jfif)$/i.test(data.productImage)) return res.status(400).send({ status: false, message: "Please provide productImage in correct format like jpeg,png,jpg,gif,bmp etc" })
-
+       
 
         //STYLE
         if (style) {
@@ -83,10 +80,14 @@ const createProduct = async function (req, res) {
             return res.status(400).send({ status: false, message: "Enum should be valid" })
         }
 
-        const availableSize = availableSizes.toUpperCase().trim().split(",").map(value => value.trim()) //converting in array
-        availableSizes = availableSize
+        const Size = availableSizes.toUpperCase().trim().split(",").map(value => value.trim()) //converting in array
 
-        let savedProductData = await productModel.create(data);
+
+        let value = { productImage: uploadedFileURL, title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes: Size, installments }
+        if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png|\.jfif)$/i.test(value.productImage)) return res.status(400).send({ status: false, message: "Please provide productImage in correct format like jpeg,png,jpg,gif,bmp etc" })
+
+
+        let savedProductData = await productModel.create(value);
         return res.status(201).send({ status: true, message: "Product created successfully", data: savedProductData, });
 
 
@@ -94,6 +95,7 @@ const createProduct = async function (req, res) {
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 }
+
 const getProductByQuery = async function (req, res) {
     try {
         let data = req.query
@@ -102,22 +104,15 @@ const getProductByQuery = async function (req, res) {
 
         /// size validation //
         let Get = {}
+
         if (size) {
             if (!(validators.isValid(size))) {
                 return res.status(400).send({ status: false, msg: "Please provide availableSize" })
             }
-            if (size.toUpperCase().trim().split(",").map(value => validators.isValidEnum(value)).filter(item => item == false).length !== 0) {
-                return res.status(400).send({ status: false, msg: "Enum should be valid" })
-            }
 
-            size = size.toUpperCase().trim().split(",").map(value => value.trim())
+            let sizes = data.size.split(",").map(x => x.trim())
+            Get.availableSizes = { $in: sizes }
 
-            Get.availableSizes = { $in: `${size}` }
-
-            // if (size) {
-            //     size = size.toUpperCase().split(" ")
-            //     Get.availableSizes = { $in: size }
-            // }
         }
 
         // name validation//
@@ -149,8 +144,6 @@ const getProductByQuery = async function (req, res) {
         }
 
         Get.isDeleted = false
-
-        console.log(Get)
 
         let result = await productModel.find(Get).sort({ price: 1 })
 
