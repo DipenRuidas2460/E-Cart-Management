@@ -26,11 +26,11 @@ router.delete("/products/:productId",productController.deleteProduct)
 
 router.post("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.AddToCart)
 
-// router.put("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.updateCart)
+router.put("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.updateCart)
 
-// router.get("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.GetCart)
+router.get("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.getCart)
 
-// router.delete("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.deleteCart)
+router.delete("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.deleteCart)
 
 
 module.exports = router
