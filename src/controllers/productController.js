@@ -92,6 +92,7 @@ const createProduct = async function (req, res) {
 
 
     } catch (err) {
+        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 }
