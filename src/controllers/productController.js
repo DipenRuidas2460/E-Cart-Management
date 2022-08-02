@@ -4,7 +4,6 @@ const mongoose = require("mongoose")
 const aws = require('../aws/aws');
 
 
-
 const createProduct = async function (req, res) {
     try {
         let data = req.body;

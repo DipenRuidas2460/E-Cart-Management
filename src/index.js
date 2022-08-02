@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 const route = require('./routes/route.js');
 const { default: mongoose } = require('mongoose');
 const app = express();
@@ -7,7 +7,7 @@ const app = express();
 const multer = require("multer");
 
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 // app.use(bodyParser.urlencoded({ extended: true }));
 
