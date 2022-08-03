@@ -48,6 +48,11 @@ const isValidNum = (number) => {
     }
 }
 
-module.exports = { isValidNum, IsValidStr, isValidEnum, isValidBody, isValid, isValidEmail, isValidMobile, isValidSize, isValidPrice }
+const isValidStatus = function (status) {
+    let orderStatus = ["pending", "completed", "canceled"]
+    return orderStatus.includes(status)
+}
+
+module.exports = { isValidNum, IsValidStr, isValidEnum, isValidBody, isValid, isValidEmail, isValidMobile, isValidSize, isValidPrice,isValidStatus }
 
 

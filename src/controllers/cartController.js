@@ -85,68 +85,103 @@ const updateCart = async function (req, res) {
     try {
         let data = req.body
 
+        //______________VALIDATIONS____________________//
+
         //empty body validation
+
         if (!Object.keys(data).length) { return res.status(400).send({ status: false, message: "Data can't be empty" }) }
 
         const { cartId, productId, removeProduct } = data
 
         // CartId Validation
+
         if (!cartId) return res.status(400).send({ status: false, message: "please mention cartID" })
+
+
+        if (!mongoose.isValidObjectId(cartId)) return res.status(400).send({ status: false, message: "please mention valid cartID" })
+
         let cart = await cartModel.findById({ _id: cartId })
 
         if (!cart) { return res.status(400).send({ status: false, message: "No such cart found" }) }
 
+        if (cart.items.length == 0) { return res.status(400).send({ status: false, message: "nothing to delete in item " }) }
+
         //productId validation
+
         if (!productId) return res.status(400).send({ status: false, message: "please mention productID" })
+
+        if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "please mention valid productID" })
+
         let product = await productModel.findById({ _id: productId, isDeleted: false })
+
         if (!product) { return res.status(400).send({ status: false, message: "No such product found in cart " }) }
-
-
-        if (!removeProduct) return res.status(400).send({ status: false, message: "please mention what to update " })
-
-        // key-value pair validation
-
-        if (removeProduct !== 1 || 0) return res.status(400).send({ status: false, message: "please mention 1 or 0 only in remove product" })
+  
+        if (!(removeProduct == 1 || removeProduct == 0)) return res.status(400).send({ status: false, message: "please mention 1 or 0 only in remove product" })
 
 
 
-        //*********** if remove product : 1  *******************/
+        //****************** if remove product : 1 ***************/
 
         if (removeProduct == 1) {
-            var pro = cart.items
+
+            var pro = cart.items                                             // items array
+
             for (let i = 0; i < pro.length; i++) {
+
                 if (pro[i].productId == productId) {
-                    let dec = pro[i].quantity - 1
+
+                    let dec = pro[i].quantity - 1                            // decreasing quantity of product -1
+
                     pro[i].quantity = dec
-                    var cTotalPrice = cart.totalPrice - product.price;
-                    var cTotalItems = cart.totalItems - 1
+
+                    var cTotalPrice = cart.totalPrice - product.price;       // updated total price
+
+                    if (pro[i].quantity == 0) {
+                        pro.splice(i, 1)
+                        var ded = cart.totalItems - 1
+                        var cTotalItems = ded                               // only  if item quantity will become zero, totalItems 
+                    }                                                        // will -1
+
                     break;
 
                 }
-                return pro
+                return pro                                                   // it will return item array  after changes
             }
+
+            if (pro.length == 0) { cTotalPrice = 0; cTotalItems = 0 };        // if there will be no item in cart 
+
             let updated = await cartModel.findOneAndUpdate({ _id: cartId }, { items: pro, totalPrice: cTotalPrice, totalItems: cTotalItems }, { new: true })
-            res.status(200).send({ status: true, message: "update successfull", data: updated })
+
+            return res.status(200).send({ status: true, message: "update successfull", data: updated })
 
         }
 
-        //*********** if remove product : 1  *******************/
+        //************** if remove product : 0 ************** *******/
 
         if (removeProduct == 0) {
 
-            var pro = cart.items
+            var pro = cart.items                                                             // array of items
+
             for (let i = 0; i < pro.length; i++) {
+
                 if (pro[i].productId == productId)
-                    var cTotalPrice = cart.totalPrice - (product.price * pro.quantity)
-                var cTotalItems = cart.totalItems - pro.quantity
-                pro.splice(i, 1)
+
+                    var cTotalPrice = cart.totalPrice - (product.price * pro[i].quantity)      //deducting products price from total price
+
+
+                var cTotalItems = cart.totalItems - 1                            // decreasing totalItems quantity by 1
+
+                pro.splice(i, 1)                                                  // deleting product from items array
 
                 break;
             }
-            return pro
+
         }
-        let updated = await cartModel.findOneAndUpdate({ _id: cartId }, { items: pro, totalPrice: cTotalPrice, totalItems: cTotalItems }, { new: true })
-        res.status(200).send({ status: true, message: "update successfull", data: updated })
+        if (pro.length == 0) { cTotalPrice = 0; cTotalItems = 0 };             // if items array will become empty
+
+        let updated = await cartModel.findOneAndUpdate({ _id: cartId }, { items: pro, totalPrice: cTotalPrice, totalItems: cTotalItems }, { new: true })                                                         // updated
+
+        return res.status(200).send({ status: true, message: "update successfull", data: updated })
     }
 
     catch (err) {
@@ -154,8 +189,9 @@ const updateCart = async function (req, res) {
         return res.status(500).send({ status: false, msg: "Error", error: err.message })
 
     }
-}
 
+
+}
 
 const getCart = async function (req, res) {
     try {
@@ -207,7 +243,7 @@ const deleteCart = async function (req, res) {
         let updatedUserCart = await cartModel.findOneAndUpdate({ userId: userId }, { items: [], totalPrice: 0, totalItems: 0 }, { new: true })
         return res.status(200).send({ status: true, message: " cart deleted successfully" })
 
-        
+
     } catch (err) {
         console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });

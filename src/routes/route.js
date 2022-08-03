@@ -2,6 +2,7 @@ const  express  = require("express");
 const userController = require("../controllers/userController");
 const productController = require("../controllers/productController");
 const cartController = require("../controllers/cartController")
+const orderController = require("../controllers/orderController")
 const middleWare = require("../middleware/auth")
 const router = express.Router();
 
@@ -22,7 +23,7 @@ router.put("/products/:productId",productController.updateProduct)
 
 router.delete("/products/:productId",productController.deleteProduct)
 
-/*****************************Cart API's *********************************************************************/
+/*****************************[CART API ]*********************************************************************/
 
 router.post("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.AddToCart)
 
@@ -31,6 +32,12 @@ router.put("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,ca
 router.get("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.getCart)
 
 router.delete("/users/:userId/cart",middleWare.authenticate,middleWare.authorize,cartController.deleteCart)
+
+/**********************************[ORDER API]*****************************************************************************/
+
+router.post("/users/:userId/orders",middleWare.authenticate,middleWare.authorize, orderController.createOrder)
+
+router.put("/users/:userId/orders",middleWare.authenticate,middleWare.authorize, orderController.updateOrder)
 
 
 module.exports = router
