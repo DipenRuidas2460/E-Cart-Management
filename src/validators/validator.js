@@ -49,7 +49,7 @@ const isValidNum = (number) => {
 }
 
 const isValidStatus = function (status) {
-    let orderStatus = ["pending", "completed", "canceled"]
+    let orderStatus = ["pending", "completed", "cancled"]
     return orderStatus.includes(status)
 }
 
