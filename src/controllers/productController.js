@@ -197,7 +197,7 @@ const updateProduct = async function (req, res) {
 
         if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "productId is not valid" })
 
-        const findProduct = await productModel.findById({ _id: productId })
+        const findProduct = await productModel.findById({ _id: productId,isDeleted:false})
         if (!findProduct) return res.status(404).send({ status: false, message: "productId does not exists" })
 
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data

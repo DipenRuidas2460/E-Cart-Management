@@ -9,28 +9,44 @@ const orderModel = require("../models/orderModel")
 const createOrder = async function (req, res) {
     try {
         let data = req.body
-        let userId = req.param.userId
+        let userId = req.params.userId
 
-        let { items, totalPrice, totalItems, totalQuantity } = data
+        let createData = {}
+        createData.userId = userId
 
         if (!validators.isValidBody(data)) { return res.status(400).send({ status: false, message: "Please Provide input in Request Body" }) }
 
         if (!userId) return res.status(400).send({ status: false, message: "userId must be present in params" })
         if (!mongoose.isValidObjectId(userId)) { return res.status(400).send({ status: false, msg: "Invalid userId in params" }) }
         const searchUser = await userModel.findOne({ _id: userId });
-        if (!searchUser) { return res.status(400).send({ status: false, message: `user doesn't exists for ${userId}` }) }
+        if (!searchUser) { return res.status(404).send({ status: false, message: `user doesn't exists for ${userId}` }) }
 
-        if (!items) return res.status(400).send({ status: false, message: "items must be present in request Body" })
+        if (!data.cartId) return res.status(400).send({ status: false, message: "CartId must be present in request Body" })
+        if (!mongoose.isValidObjectId(data.cartId)) { return res.status(400).send({ status: false, msg: "Invalid cartId" }) }
+        let searchCart = await cartModel.findOne({_id:data.cartId,userId:userId})
+        if (!searchCart) { return res.status(404).send({ status: false, message: `cart doesn't exists` }) }
 
-        if (!data.productId) return res.status(400).send({ status: false, message: 'Please provide productId' })
-        if (!mongoose.isValidObjectId(data.productId)) return res.status(400).send({ status: false, message: 'Please provide valid productId' })
-        let productCheck = await productModel.findById(data.productId)
-        if (!productCheck) return res.status(404).send({ status: false, message: ` product ${data.productId} not found` })
-        if (productCheck.isDeleted == true) return res.status(404).send({ status: false, message: `${data.productId} this product is deleted` })
+        createData.items = searchCart.items
+        createData.totalPrice = searchCart.totalPrice
+        createData.totalItems= searchCart.totalItems
 
-        if (data.quantity || data.quantity == "") {
-            if (!/^[0-9]+$/.test(data.quantity)) return res.status(400).send({ status: false, message: "Quantity should be a valid number" })
+        let totalQuantity = 0
+
+        for(let i=0;i<searchCart.items.length;i++){
+            let productCheck = await productModel.findById(searchCart.items[i].productId)
+            if (!productCheck) return res.status(404).send({ status: false, message: ` product ${data.productId} not found` })
+            if (productCheck.isDeleted == true) return res.status(404).send({ status: false, message: `This product is deleted` })
+
+            totalQuantity = totalQuantity + searchCart.items[i].quantity
+            createData.totalQuantity = totalQuantity
         }
+        if(data.cancellable){
+            if(typeof (cancellable)!=="boolean") return res.status(400).send({ status: false, message: "Cancellable is only Boolean value" })
+        }
+
+        let OrderData = await orderModel.create(createData)
+        return res.status(201).send({ status: true, message: "Successfully Order Placed", Order: OrderData })
+        
     } catch (err) {
         console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });

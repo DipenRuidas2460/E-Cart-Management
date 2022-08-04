@@ -304,7 +304,7 @@ const updateUser = async function (req, res) {
 
                 if (address.shipping.city) {
                     if (!validators.isValid(address.shipping.city)) return res.status(400).send({ status: false, message: "Please enter Valid Shipping city address" })
-                    if (!validators.IsValidStr(city)) return res.status(400).send({ status: false, message: "city is only alphabetical" });
+                    if (!validators.IsValidStr(address.shipping.city)) return res.status(400).send({ status: false, message: "city is only alphabetical" });
                     update["address.shipping.city"] = address.shipping.city
                 }
 
@@ -325,7 +325,7 @@ const updateUser = async function (req, res) {
 
                 if (address.billing.city) {
                     if (!validators.isValid(address.billing.city)) return res.status(400).send({ status: false, message: "Please enter Valid billing city address" })
-                    if (!validators.IsValidStr(city)) return res.status(400).send({ status: false, message: "city is only alphabetical" });
+                    if (!validators.IsValidStr(address.billing.city)) return res.status(400).send({ status: false, message: "city is only alphabetical" });
                     update["address.billing.city"] = address.billing.city
                 }
 
