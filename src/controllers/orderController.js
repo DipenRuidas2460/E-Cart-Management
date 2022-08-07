@@ -6,31 +6,41 @@ const cartModel = require('../models/cartModel')
 const orderModel = require("../models/orderModel")
 
 
+//**************************************** CREATE ORDER *************************************************/
+
 const createOrder = async function (req, res) {
+
     try {
         let data = req.body
         let userId = req.params.userId
 
-        let createData = {}
+        let createData = {}   // FINAL object to be used to create 
         createData.userId = userId
 
+        //_____________________________________________VALIDATIONS__________________________________________________
+
         if (!validators.isValidBody(data)) { return res.status(400).send({ status: false, message: "Please Provide input in Request Body" }) }
+
+        //  USER ID 
 
         if (!userId) return res.status(400).send({ status: false, message: "userId must be present in params" })
         if (!mongoose.isValidObjectId(userId)) { return res.status(400).send({ status: false, msg: "Invalid userId in params" }) }
         const searchUser = await userModel.findOne({ _id: userId });
         if (!searchUser) { return res.status(404).send({ status: false, message: `user doesn't exists for ${userId}` }) }
 
+        // CART ID 
+
         if (!data.cartId) return res.status(400).send({ status: false, message: "CartId must be present in request Body" })
         if (!mongoose.isValidObjectId(data.cartId)) { return res.status(400).send({ status: false, msg: "Invalid cartId" }) }
         let searchCart = await cartModel.findOne({ _id: data.cartId, userId: userId })
         if (!searchCart) { return res.status(404).send({ status: false, message: `cart doesn't exists` }) }
-
+        
         createData.items = searchCart.items
         createData.totalPrice = searchCart.totalPrice
         createData.totalItems = searchCart.totalItems
 
         let totalQuantity = 0
+
 
         for (let i = 0; i < searchCart.items.length; i++) {
             let productCheck = await productModel.findById(searchCart.items[i].productId)
@@ -53,6 +63,11 @@ const createOrder = async function (req, res) {
     }
 
 }
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+//**********************************************   UPDATE ORDER ****************************************************** */
 
 
 const updateOrder = async function (req, res) {
@@ -90,13 +105,13 @@ const updateOrder = async function (req, res) {
         // cancellable validation 
 
         if (isOrder.cancellable == false) return res.status(400).send({ status: false, msg: "You can not cancel this order" })
-        if (isOrder.status == "completed") return res.status(400).send({ status: false, msg: "You can not change status" })
+        if (isOrder.status == "completed") return res.status(400).send({ status: false, msg: "You can not change status now it is completed." })
         if (isOrder.status == "cancled") return res.status(400).send({ status: false, msg: "your order is cancled, place order again." })
         //status validations
 
 
         if (!status) {
-            return res.status(400).send({ status: false, message: "Please enter current status of the order." });
+            return res.status(400).send({ status: false, message: "Please enter  status of order to be updated ." });
         }
 
 

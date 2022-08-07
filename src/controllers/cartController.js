@@ -5,9 +5,12 @@ const userModel = require('../models/userModel')
 const cartModel = require('../models/cartModel')
 const orderModel = require("../models/orderModel")
 
-
+//****************************************  CREATE CART API********************************************* */
 
 const AddToCart = async function (req, res) {
+
+
+
     try {
         let data = req.body
         if (!Object.keys(data).length) return res.status(400).send({ status: false, message: "Data can't be empty" })
@@ -18,18 +21,24 @@ const AddToCart = async function (req, res) {
 
         createData.userId = userId
 
+        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  VALIDATIONS  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^//
+
+
+         // USER ID
+
         if (!userId) return res.status(400).send({ status: false, message: "userId must be present in params" })
         if (!mongoose.isValidObjectId(userId)) return res.status(400).send({ status: false, message: "User not valid" })
         let findUser = await userModel.findById({ _id: userId })
         if (!findUser) return res.status(404).send({ status: false, message: "UserId or user does not exists please register" })
 
-
+        // PRODUCT ID
         if (!data.productId) return res.status(400).send({ status: false, message: 'Please provide productId' })
         if (!mongoose.isValidObjectId(data.productId)) return res.status(400).send({ status: false, message: 'Please provide valid productId' })
         let productCheck = await productModel.findById(data.productId)
         if (!productCheck) return res.status(404).send({ status: false, message: ` product ${data.productId} not found` })
         if (productCheck.isDeleted == true) return res.status(404).send({ status: false, message: `${data.productId} this product is deleted` })
-
+ 
+        // QUANTITY
         if (data.quantity || data.quantity == "") {
             if (!/^[0-9]+$/.test(data.quantity)) return res.status(400).send({ status: false, message: "Quantity should be a valid number" })
         }
@@ -42,6 +51,7 @@ const AddToCart = async function (req, res) {
 
         createData.items = reqItems
 
+        // CART ID
         if (data.cartId || data.cartId == "") {
             if (!mongoose.isValidObjectId(data.cartId)) return res.status(400).send({ status: false, message: 'Please provide valid userId' })
             let cartCheck = await cartModel.findOne({ _id: data.cartId, userId: userId })
@@ -65,6 +75,9 @@ const AddToCart = async function (req, res) {
                 return res.status(200).send({ status: true, message: `Product added successfully`, data: updatedCart })
 
             }
+            // ___________________________final update _________________________________________________________//
+
+
             const updateData = await cartModel.findOneAndUpdate(
                 { userId: userId },
                 { $inc: { totalPrice: createData.totalPrice, totalItems: createData.totalItems }, $push: { items: createData['items'] } },
@@ -81,7 +94,9 @@ const AddToCart = async function (req, res) {
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 }
+//==========================================================================================================================//
 
+//********************************** UPDATE CART API ************************************************************ */
 
 const updateCart = async function (req, res) {
     try {
@@ -195,6 +210,8 @@ const updateCart = async function (req, res) {
 
 }
 
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 const getCart = async function (req, res) {
     try {
         const userId = req.params.userId
@@ -232,6 +249,12 @@ const getCart = async function (req, res) {
     }
 }
 
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+//***************************************** DELETE CART ********************************************************** */
+
 const deleteCart = async function (req, res) {
     try {
         const userId = req.params.userId
@@ -260,6 +283,8 @@ const deleteCart = async function (req, res) {
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 }
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 module.exports = { AddToCart, updateCart, getCart, deleteCart }
 

@@ -3,6 +3,7 @@ const validators = require("../validators/validator")
 const mongoose = require("mongoose")
 const aws = require('../aws/aws');
 
+//*********************************************** CREATE PRODUCT ************************************ */
 
 const createProduct = async function (req, res) {
     try {
@@ -96,6 +97,13 @@ const createProduct = async function (req, res) {
     }
 }
 
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+
+//**********************************************GET PRODUCT BY QUERY PARAMS ***************************************** */
+
 const getProductByQuery = async function (req, res) {
     try {
         let data = req.query
@@ -162,6 +170,11 @@ const getProductByQuery = async function (req, res) {
 }
 
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//*******************************************  GET PRODUCT BY ID********************************************* */
+
 const getProductByParams = async function (req, res) {
     try {
         const productId = req.params.productId
@@ -183,6 +196,11 @@ const getProductByParams = async function (req, res) {
     }
 
 }
+
+//_+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//***************************************  UPDATE PRODUCT ************************************************************ */
 
 
 const updateProduct = async function (req, res) {
@@ -305,6 +323,10 @@ const updateProduct = async function (req, res) {
 
 }
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//***************************************** DELETE PRODUCT ********************************************************* */
 
 const deleteProduct = async function (req, res) {
     try {
