@@ -72,8 +72,8 @@ const createOrder = async function (req, res) {
 
 const updateOrder = async function (req, res) {
     try {
-        data = req.body
-        userId = req.params.userId
+        let data = req.body
+        let userId = req.params.userId
 
         const { orderId, status } = data
 
@@ -87,7 +87,7 @@ const updateOrder = async function (req, res) {
         if (!mongoose.isValidObjectId(userId)) { return res.status(400).send({ status: false, msg: "Invalid userId in params" }) }
 
         const searchUser = await userModel.findOne({ _id: userId });
-        if (!searchUser) { return res.status(400).send({ status: false, message: `user doesn't exists for ${userId}` }) }
+        if (!searchUser) { return res.status(404).send({ status: false, message: `user doesn't exists for ${userId}` }) }
 
         //orderId validation
 
