@@ -232,15 +232,6 @@ const getCart = async function (req, res) {
             return res.status(404).send({ status: false, message: `Cart doesn't exists by this ${userId} ` })
         }
 
-        let OrderCheck = await orderModel.findOne({ userId: userId })
-        if (OrderCheck) {
-            if (OrderCheck.status == ("pending" || "completed" || "cancled")) {
-                let setCart = await cartModel.findOneAndUpdate({ userId: userId }, { items: [], totalPrice: 0, totalItems: 0 }, { new: true })
-                return res.status(200).send({ status: true, message: "Cart is Empty because order is placed", data: setCart })
-            }
-        }
-
-
         return res.status(200).send({ status: true, message: "Successfully fetched cart.", data: findCart })
 
     } catch (err) {

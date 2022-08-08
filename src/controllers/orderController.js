@@ -54,6 +54,13 @@ const createOrder = async function (req, res) {
             if (typeof (cancellable) !== "boolean") return res.status(400).send({ status: false, message: "Cancellable is only Boolean value" })
         }
 
+        let filter = {}
+           filter.items=[]
+           filter.totalItems=0
+           filter.totalPrice=0
+        let cartUpdated = await cartModel .findOneAndUpdate({_id:data.cartId},filter,{new:true})
+
+
         let OrderData = await orderModel.create(createData)
         return res.status(201).send({ status: true, message: "Successfully Order Placed", Order: OrderData })
 
@@ -75,7 +82,7 @@ const updateOrder = async function (req, res) {
         let data = req.body
         let userId = req.params.userId
 
-        const { orderId, status } = data
+        let { orderId, status } = data
 
         //empty body validation
 
@@ -98,13 +105,23 @@ const updateOrder = async function (req, res) {
 
         //verifying does the order belong to user or not.
 
-        let isOrder = await orderModel.findOne({ userId: userId });
+        let isOrder = await orderModel.findOne({ userId:userId, _id:orderId});
         if (!isOrder) {
             return res.status(400).send({ status: false, message: `No such order  belongs to ${userId} ` });
         }
         // cancellable validation 
 
-        if (isOrder.cancellable == false) return res.status(400).send({ status: false, msg: "You can not cancel this order" })
+        if (isOrder.cancellable == false) {
+            if(status == "completed" && isOrder.status=="pending"){
+                const updateorderStatus = await orderModel.findOneAndUpdate(
+                    { _id: checkOrder._id },
+                    { $set: { status: statusbody } },
+                    { new: true })
+                return res.status(200).send({ status: true, message: `Successfully updated the order details.`, data: updateorderStatus })
+            
+            }
+            return res.status(400).send({ status: false, msg: "You can not cancel this order" })
+        }
         if (isOrder.status == "completed") return res.status(400).send({ status: false, msg: "You can not change status now it is completed." })
         if (isOrder.status == "cancled") return res.status(400).send({ status: false, msg: "your order is cancled, place order again." })
         //status validations
