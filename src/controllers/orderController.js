@@ -24,14 +24,14 @@ const createOrder = async function (req, res) {
         //  USER ID 
 
         if (!userId) return res.status(400).send({ status: false, message: "userId must be present in params" })
-        if (!mongoose.isValidObjectId(userId)) { return res.status(400).send({ status: false, msg: "Invalid userId in params" }) }
+        if (!mongoose.isValidObjectId(userId)) { return res.status(400).send({ status: false, message: "Invalid userId in params" }) }
         const searchUser = await userModel.findOne({ _id: userId });
         if (!searchUser) { return res.status(404).send({ status: false, message: `user doesn't exists for ${userId}` }) }
 
         // CART ID 
 
         if (!data.cartId) return res.status(400).send({ status: false, message: "CartId must be present in request Body" })
-        if (!mongoose.isValidObjectId(data.cartId)) { return res.status(400).send({ status: false, msg: "Invalid cartId" }) }
+        if (!mongoose.isValidObjectId(data.cartId)) { return res.status(400).send({ status: false, message: "Invalid cartId" }) }
         let searchCart = await cartModel.findOne({ _id: data.cartId, userId: userId })
         if (!searchCart) { return res.status(404).send({ status: false, message: `cart doesn't exists` }) }
         
@@ -89,18 +89,18 @@ const updateOrder = async function (req, res) {
         if (!validators.isValidBody(data)) { return res.status(400).send({ status: false, message: "Please Provide input in Request Body" }) }
 
         // userId validation
-        if (!userId) { return res.status(400).send({ status: false, msg: "please mention userId in params" }) }
+        if (!userId) { return res.status(400).send({ status: false, message: "please mention userId in params" }) }
 
-        if (!mongoose.isValidObjectId(userId)) { return res.status(400).send({ status: false, msg: "Invalid userId in params" }) }
+        if (!mongoose.isValidObjectId(userId)) { return res.status(400).send({ status: false, message: "Invalid userId in params" }) }
 
         const searchUser = await userModel.findOne({ _id: userId });
         if (!searchUser) { return res.status(404).send({ status: false, message: `user doesn't exists for ${userId}` }) }
 
         //orderId validation
 
-        if (!orderId) return res.status(400).send({ status: false, msg: "please mention order id" })
+        if (!orderId) return res.status(400).send({ status: false, message: "please mention order id" })
 
-        if (!mongoose.isValidObjectId(orderId)) { return res.status(400).send({ status: false, msg: "OrderId is not valid" }) }
+        if (!mongoose.isValidObjectId(orderId)) { return res.status(400).send({ status: false, message: "OrderId is not valid" }) }
 
 
         //verifying does the order belong to user or not.
@@ -114,16 +114,16 @@ const updateOrder = async function (req, res) {
         if (isOrder.cancellable == false) {
             if(status == "completed" && isOrder.status=="pending"){
                 const updateorderStatus = await orderModel.findOneAndUpdate(
-                    { _id: checkOrder._id },
-                    { $set: { status: statusbody } },
+                    { _id: isOrder._id },
+                    { $set:{status:status} },
                     { new: true })
                 return res.status(200).send({ status: true, message: `Successfully updated the order details.`, data: updateorderStatus })
             
             }
-            return res.status(400).send({ status: false, msg: "You can not cancel this order" })
+            return res.status(400).send({ status: false, message: "You can not cancel this order" })
         }
-        if (isOrder.status == "completed") return res.status(400).send({ status: false, msg: "You can not change status now it is completed." })
-        if (isOrder.status == "cancled") return res.status(400).send({ status: false, msg: "your order is cancled, place order again." })
+        if (isOrder.status == "completed") return res.status(400).send({ status: false, message: "You can not change status now it is completed." })
+        if (isOrder.status == "cancled") return res.status(400).send({ status: false, message: "your order is cancled, place order again." })
         //status validations
 
 

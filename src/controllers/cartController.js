@@ -203,7 +203,7 @@ const updateCart = async function (req, res) {
 
     catch (err) {
         console.log(err)
-        return res.status(500).send({ status: false, msg: "Error", error: err.message })
+        return res.status(500).send({ status: false, message: "Error", error: err.message })
 
     }
 
@@ -258,12 +258,12 @@ const deleteCart = async function (req, res) {
 
         let Userdata = await userModel.findOne({ _id: userId })
         if (!Userdata) {
-            return res.status(404).send({ status: false, msg: "No such user exists with this userID" });
+            return res.status(404).send({ status: false, message: "No such user exists with this userID" });
         }
 
         let usercart = await cartModel.findOne({ userId: userId })
         if (!usercart) {
-            return res.status(404).send({ status: false, msg: "No such user found. Please register and try again" });
+            return res.status(404).send({ status: false, message: "No such user found. Please register and try again" });
         }
         let updatedUserCart = await cartModel.findOneAndUpdate({ userId: userId }, { items: [], totalPrice: 0, totalItems: 0 }, { new: true })
         return res.status(200).send({ status: true, message: "Cart deleted successfully" })

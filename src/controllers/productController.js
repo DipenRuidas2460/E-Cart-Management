@@ -115,7 +115,7 @@ const getProductByQuery = async function (req, res) {
 
         if (size) {
             if (!(validators.isValid(size))) {
-                return res.status(400).send({ status: false, msg: "Please provide availableSize" })
+                return res.status(400).send({ status: false, message: "Please provide availableSize" })
             }
 
             let sizes = data.size.split(",").map(x => x.trim())

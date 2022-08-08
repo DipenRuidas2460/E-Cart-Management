@@ -253,19 +253,19 @@ const getProfile = async function (req, res) {
 
         //------------[user id validation ]--------------//
 
-        if (!userId) return res.status(400).send({ status: false, msg: "Please provide userId in params" })
+        if (!userId) return res.status(400).send({ status: false, message: "Please provide userId in params" })
 
         if (!mongoose.isValidObjectId(userId)) {
-            return res.status(400).send({ status: false, msg: "Invalid userId in params" })
+            return res.status(400).send({ status: false, message: "Invalid userId in params" })
         }
 
         const findUserProfile = await userModel.findOne({ _id: userId })  // ===== searching user ======//
 
         if (!findUserProfile) {
-            return res.status(404).send({ status: false, msg: "User doesn't exists by userId" })  // === user not found === //
+            return res.status(404).send({ status: false, message: "User doesn't exists by userId" })  // === user not found === //
         }
 
-        return res.status(200).send({ status: true, msg: "Profile found successfully.", data: findUserProfile })
+        return res.status(200).send({ status: true, message: "Profile found successfully.", data: findUserProfile })
 
     } catch (err) {
         res.status(500).send({ status: false, message: err.message })
@@ -289,13 +289,13 @@ const updateUser = async function (req, res) {
 
         //---------------------empty body validation -----------------------//
 
-        if (!(Object.keys(data).length || files)) return res.status(400).send({ status: false, msg: "Please provide some data for update" })
+        if (!(Object.keys(data).length || files)) return res.status(400).send({ status: false, message: "Please provide some data for update" })
 
-        if (!userId) return res.status(400).send({ status: false, msg: "Please provide userId in params" })
+        if (!userId) return res.status(400).send({ status: false, message: "Please provide userId in params" })
 
 
         if (!mongoose.isValidObjectId(userId)) {
-            return res.status(400).send({ status: false, msg: "userId is not valid" })   // userId validation 
+            return res.status(400).send({ status: false, message: "userId is not valid" })   // userId validation 
         }
         //--------------------parsing data -----------------------------//
         try {
@@ -313,7 +313,7 @@ const updateUser = async function (req, res) {
            // ----------------userId --------------//
 
         const findUserProfile = await userModel.findOne({ _id: userId })      
-        if (!findUserProfile) return res.status(400).send({ status: false, msg: "User doesn't exists by this userId" })
+        if (!findUserProfile) return res.status(400).send({ status: false, message: "User doesn't exists by this userId" })
 
           //---------------fname  valod
         if (fname) {
@@ -422,7 +422,7 @@ const updateUser = async function (req, res) {
 
     } catch (err) {
         console.log(err)
-        return res.status(500).send({ status: false, msg: "Error", error: err.message })
+        return res.status(500).send({ status: false, message: "Error", error: err.message })
     }
 }
 
