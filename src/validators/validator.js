@@ -41,11 +41,8 @@ const isValidEnum = function (value) {
 }
 
 const isValidNum = (number) => {
-    if (/^\d+$/.test(number)) {
-        return true
-    } else {
-        return false
-    }
+    if (/^\d+$/.test(number)) return true
+    return false 
 }
 
 const isValidStatus = function (status) {

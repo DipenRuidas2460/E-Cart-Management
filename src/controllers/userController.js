@@ -85,7 +85,7 @@ const createUser = async function (req, res) {
         // _____________________________________________Address Validation_________________________________//
 
 
-        if (!address) return res.status(400).send({ status: false, message: "Address can't be empty" })
+        if (!address || address=="") return res.status(400).send({ status: false, message: "Address can't be empty" })
    
         //__ ----------parsing of address-------------------//
 
@@ -231,10 +231,11 @@ const loginUser = async function (req, res) {
         );
 
         res.setHeader("Auth", token);
-        res.status(200).send({ status: true, message: 'User login successfull', data: { userId: user._id, token: token } });
+        return res.status(200).send({ status: true, message: 'User login successfull', data: { userId: user._id, token: token } });
     }
 
     catch (err) {
+        console.log(err)
         return res.status(500).send({ status: false, message: err.message })
     }
 }
@@ -283,7 +284,7 @@ const updateUser = async function (req, res) {
 
         //---------^^^^^^^^^^^^ fetching request data    ^^^^^^^^^^^^ ----------//
 
-        const data = req.body
+        let data = req.body
         let userId = req.params.userId
         let files = req.files
 
@@ -371,6 +372,8 @@ const updateUser = async function (req, res) {
                 return res.status(400).send({ status: false, message: "Please enter Pincode in correct format" })
             }
 
+            if (address=="") return res.status(400).send({ status: false, message: "Address can't be empty" })
+
             if (!Object.keys(address).length) return res.status(400).send({ status: false, message: "Address can't be empty" });
             if (address.shipping) {
                 if (!Object.keys(address.shipping).length) { return res.status(400).send({ status: false, message: "Please provide somedata in Shipping address" }); }
@@ -417,7 +420,7 @@ const updateUser = async function (req, res) {
 
         }
 
-        let updatedUserProfile = await userModel.findByIdAndUpdate({ _id: userId }, update, { new: true })
+        let updatedUserProfile = await userModel.findOneAndUpdate({ _id: userId }, update, { new: true })
         return res.status(200).send({ status: true, message: "User profile updated", data: updatedUserProfile })
 
     } catch (err) {

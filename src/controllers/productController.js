@@ -27,6 +27,7 @@ const createProduct = async function (req, res) {
 
         //PRICE
         if (!price) return res.status(400).send({ status: false, message: "Price is required" })
+        if(price=="") return res.status(400).send({ status: false, message: "Please provide some number in price" });
         if ((price).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces from price" }); }
         if (!validators.isValidPrice(price)) return res.status(400).send({ status: false, message: "Please Provide Valid price(price should be Number/Decimal)" })
 
@@ -43,6 +44,7 @@ const createProduct = async function (req, res) {
 
         //  isFreeShipping
         if (isFreeShipping) {
+            if(isFreeShipping=="") return res.status(400).send({status:false, message:"please provide some data in isFreeShipping"})
             isFreeShipping = isFreeShipping.toLowerCase();
             if (isFreeShipping == 'true' || isFreeShipping == 'false') {
                 isFreeShipping = JSON.parse(isFreeShipping);      //convert from string to boolean
@@ -68,6 +70,7 @@ const createProduct = async function (req, res) {
         //INSTALLMENTS   
 
         if (installments) {
+            if(installments=="") return res.status(400).send({status:false, message:"please provide some data in installments"})
             if (!validators.isValidNum(installments)) return res.status(400).send({ status: false, message: "installments not valid " })
         }
 
@@ -180,10 +183,10 @@ const getProductByParams = async function (req, res) {
         const productId = req.params.productId
         if (!productId) return res.status(400).send({ status: false, message: "ProductId must be present" })
         if (!mongoose.isValidObjectId(productId)) {
-            res.status(400).send({ status: false, message: "Enter valid productId" })
+            return res.status(400).send({ status: false, message: "Enter valid productId" })
         }
 
-        const data = await productModel.findById({ _id: productId, isDeleted: false })
+        const data = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!data) {
             return res.status(404).send({ status: false, message: "Product not found" })
         }
@@ -215,7 +218,7 @@ const updateProduct = async function (req, res) {
 
         if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "productId is not valid" })
 
-        const findProduct = await productModel.findById({ _id: productId,isDeleted:false})
+        const findProduct = await productModel.findOne({ _id: productId,isDeleted:false})
         if (!findProduct) return res.status(404).send({ status: false, message: "productId does not exists" })
 
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
@@ -240,6 +243,7 @@ const updateProduct = async function (req, res) {
         }
         //PRICE
         if (price) {
+            if(price=="") return res.status(400).send({ status: false, message: "Please provide some number in price" });
             if ((price).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces from price" }); }
             if (!validators.isValidPrice(price)) return res.status(400).send({ status: false, message: "Please Provide Valid price(price should be Number/Decimal)" })
             update.price = price
@@ -263,6 +267,7 @@ const updateProduct = async function (req, res) {
 
         //  isFreeShipping
         if (isFreeShipping) {
+            if(isFreeShipping=="") return res.status(400).send({status:false, message:"please provide some data in isFreeShipping"})
             isFreeShipping = isFreeShipping.toLowerCase();
             if (isFreeShipping == 'true' || isFreeShipping == 'false') {
                 isFreeShipping = JSON.parse(isFreeShipping);      //convert from string to boolean
@@ -294,6 +299,7 @@ const updateProduct = async function (req, res) {
 
         if (installments) {
             if (!validators.isValidNum(installments)) return res.status(400).send({ status: false, message: "installments not valid " })
+            if(installments=="") return res.status(400).send({status:false, message:"please provide some data in installments"})
             update.installments = installments
         }
 
@@ -310,7 +316,7 @@ const updateProduct = async function (req, res) {
 
 
 
-        const updatedProduct = await productModel.findByIdAndUpdate({ _id: productId }, { $set: { ...update }, $addToSet: { availableSizes } }, { new: true })
+        const updatedProduct = await productModel.findOneAndUpdate({ _id: productId }, { $set: { ...update }, $addToSet: { availableSizes } }, { new: true })
         return res.status(200).send({ status: true, message: "Product updated Successfully", data: updatedProduct })
 
 
@@ -334,13 +340,12 @@ const deleteProduct = async function (req, res) {
         if (!productId) return res.status(400).send({ status: false, message: " ProductId must be present." });
         if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: " ProductId is invalid." });
 
-        let data = await productModel.findById({ _id: productId });
+        let data = await productModel.findOne({ _id: productId });
         if (!data) return res.status(404).send({ status: false, message: "No such product found" })
 
         if (data.isDeleted == true) return res.status(404).send({ status: false, message: "Product data already deleted" })
 
-        let Update = await productModel.findByIdAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: Date.now() }, { new: true });
-        console.log(Update)
+        let Update = await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: Date.now() }, { new: true });
         return res.status(200).send({ status: true, message: "successfully deleted product", });
     } catch (err) {
         console.log(err)

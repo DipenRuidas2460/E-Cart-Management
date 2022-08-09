@@ -14,7 +14,7 @@ const createOrder = async function (req, res) {
         let data = req.body
         let userId = req.params.userId
 
-        let createData = {}   // FINAL object to be used to create 
+        let createData = {}              // FINAL object to be used to create 
         createData.userId = userId
 
         //_____________________________________________VALIDATIONS__________________________________________________
@@ -35,6 +35,8 @@ const createOrder = async function (req, res) {
         let searchCart = await cartModel.findOne({ _id: data.cartId, userId: userId })
         if (!searchCart) { return res.status(404).send({ status: false, message: `cart doesn't exists` }) }
         
+        if(searchCart.items.length === 0 ){return res.status(400).send({status:false,message:"Your Cart is Empty. You can't proceed further"})}
+
         createData.items = searchCart.items
         createData.totalPrice = searchCart.totalPrice
         createData.totalItems = searchCart.totalItems

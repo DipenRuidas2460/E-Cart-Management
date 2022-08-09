@@ -12,9 +12,9 @@ const authenticate = function (req, res, next) {
 
         jwt.verify(splitToken[1], "project_5", function (err) {
             if (err) return res.status(401).send({ status: false, message: "invalid token" })
+            return next()
         });
 
-        next()
     } catch (err) {
         res.status(500).send({ status: false, msg: err.message })
     }

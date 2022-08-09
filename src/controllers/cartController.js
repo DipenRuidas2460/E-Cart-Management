@@ -3,13 +3,11 @@ const validators = require("../validators/validator")
 const productModel = require('../models/productModel')
 const userModel = require('../models/userModel')
 const cartModel = require('../models/cartModel')
-const orderModel = require("../models/orderModel")
+
 
 //****************************************  CREATE CART API********************************************* */
 
 const AddToCart = async function (req, res) {
-
-
 
     try {
         let data = req.body
@@ -129,7 +127,7 @@ const updateCart = async function (req, res) {
 
         if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "please mention valid productID" })
 
-        let product = await productModel.findById({ _id: productId, isDeleted: false })
+        let product = await productModel.findOne({ _id: productId, isDeleted: false })
 
         if (!product) { return res.status(404).send({ status: false, message: "No such product found in cart " }) }
 
@@ -161,8 +159,7 @@ const updateCart = async function (req, res) {
 
                     break;
 
-                }
-                return pro                                                   // it will return item array  after changes
+                }                                                 // it will return item array  after changes
             }
 
             if (pro.length == 0) { cTotalPrice = 0; cTotalItems = 0 };        // if there will be no item in cart 
