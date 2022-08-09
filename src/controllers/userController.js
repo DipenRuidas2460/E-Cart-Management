@@ -8,7 +8,6 @@ const bcrypt = require('bcrypt');
 //**************************************************1.CREATE USER************************************************************* */
 
 const createUser = async function (req, res) {
-
     try {
         let data = req.body;
         //______________________________ empty body validation _______________________________________//
@@ -48,7 +47,7 @@ const createUser = async function (req, res) {
         //_____________________________________ lname Validation____________________________________________//
 
         if (!(lname)) { return res.status(400).send({ status: false, message: "last name is required." }); }
-        if (!validators.isValid(lname)) return res.status(400).send({ status: false, message: "Please enter valid last " });
+        if (!validators.isValid(lname)) return res.status(400).send({ status: false, message: "Please enter valid last name" });
         if (!validators.IsValidStr(lname)) return res.status(400).send({ status: false, message: "use alphabets only in last name" });
         if ((lname).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces from last name" }); }
 
@@ -85,7 +84,7 @@ const createUser = async function (req, res) {
         // _____________________________________________Address Validation_________________________________//
 
 
-        if (!address || address=="") return res.status(400).send({ status: false, message: "Address can't be empty" })
+        if (!address) return res.status(400).send({ status: false, message: "Address can't be empty" })
    
         //__ ----------parsing of address-------------------//
 
@@ -314,7 +313,7 @@ const updateUser = async function (req, res) {
            // ----------------userId --------------//
 
         const findUserProfile = await userModel.findOne({ _id: userId })      
-        if (!findUserProfile) return res.status(400).send({ status: false, message: "User doesn't exists by this userId" })
+        if (!findUserProfile) return res.status(404).send({ status: false, message: "User doesn't exists by this userId" })
 
           //---------------fname  valod
         if (fname) {
@@ -374,7 +373,7 @@ const updateUser = async function (req, res) {
 
             if (address=="") return res.status(400).send({ status: false, message: "Address can't be empty" })
 
-            if (!Object.keys(address).length) return res.status(400).send({ status: false, message: "Address can't be empty" });
+            if (!Object.keys(address).length) return res.status(400).send({ status: false, message: "Address is required and add somedata in address" });
             if (address.shipping) {
                 if (!Object.keys(address.shipping).length) { return res.status(400).send({ status: false, message: "Please provide somedata in Shipping address" }); }
 

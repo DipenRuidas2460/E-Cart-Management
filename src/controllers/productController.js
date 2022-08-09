@@ -27,7 +27,7 @@ const createProduct = async function (req, res) {
 
         //PRICE
         if (!price) return res.status(400).send({ status: false, message: "Price is required" })
-        if(price=="") return res.status(400).send({ status: false, message: "Please provide some number in price" });
+        if ((price == "")||(price<=0)) return res.status(400).send({ status: false, message: "Please provide some number in price" });
         if ((price).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces from price" }); }
         if (!validators.isValidPrice(price)) return res.status(400).send({ status: false, message: "Please Provide Valid price(price should be Number/Decimal)" })
 
@@ -44,7 +44,7 @@ const createProduct = async function (req, res) {
 
         //  isFreeShipping
         if (isFreeShipping) {
-            if(isFreeShipping=="") return res.status(400).send({status:false, message:"please provide some data in isFreeShipping"})
+            if (isFreeShipping == "") return res.status(400).send({ status: false, message: "please provide some data in isFreeShipping" })
             isFreeShipping = isFreeShipping.toLowerCase();
             if (isFreeShipping == 'true' || isFreeShipping == 'false') {
                 isFreeShipping = JSON.parse(isFreeShipping);      //convert from string to boolean
@@ -59,7 +59,7 @@ const createProduct = async function (req, res) {
 
         if (!files || files.length === 0) return res.status(400).send({ status: false, message: "Please add some file" })
         let uploadedFileURL = await aws.uploadFile(files[0])
-       
+
 
         //STYLE
         if (style) {
@@ -70,7 +70,7 @@ const createProduct = async function (req, res) {
         //INSTALLMENTS   
 
         if (installments) {
-            if(installments=="") return res.status(400).send({status:false, message:"please provide some data in installments"})
+            if (installments == "") return res.status(400).send({ status: false, message: "please provide some data in installments" })
             if (!validators.isValidNum(installments)) return res.status(400).send({ status: false, message: "installments not valid " })
         }
 
@@ -111,7 +111,7 @@ const getProductByQuery = async function (req, res) {
     try {
         let data = req.query
 
-        let { size, name, priceGreaterThan, priceLessThan } = data
+        let { size, name, priceGreaterThan, priceLessThan, priceSort } = data
 
         /// size validation //
         let Get = {}
@@ -122,7 +122,7 @@ const getProductByQuery = async function (req, res) {
             }
 
             let sizes = data.size.split(",").map(x => x.trim())
-            Get.availableSizes = { $in: sizes }
+            Get.availableSizes = { $all: sizes }
 
         }
 
@@ -135,13 +135,13 @@ const getProductByQuery = async function (req, res) {
 
         //price validation //
         if (priceGreaterThan) {
-            greater = parseInt(priceGreaterThan)
+            let greater = parseInt(priceGreaterThan)
             if (typeof greater !== "number") return res.status(400).send({ status: false, message: "Please enter price in number" })
             Get.price = { $gt: `${greater}` }
         }
 
         if (priceLessThan) {
-            lesser = parseInt(priceLessThan)
+            let lesser = parseInt(priceLessThan)
             if (typeof lesser !== "number") return res.status(400).send({ status: false, message: "Please enter price in number" })
             Get.price = {
                 $lt: `${lesser}`
@@ -149,14 +149,26 @@ const getProductByQuery = async function (req, res) {
         }
 
         if (priceGreaterThan && priceLessThan) {
-            greater = parseInt(priceGreaterThan)
-            lesser = parseInt(priceLessThan)
+            let greater = parseInt(priceGreaterThan)
+            let lesser = parseInt(priceLessThan)
             Get.price = { $gt: `${greater}`, $lt: `${lesser}` }
         }
 
         Get.isDeleted = false
 
-        let result = await productModel.find(Get).sort({ price: 1 })
+        if (validators.isValid(priceSort)) {
+            if (!(priceSort == 1 || priceSort == -1)) return res.status(400).send({ status: false, message: 'priceSort Should be 1 or -1' })
+
+            let result = await productModel.find(Get).sort({ price: priceSort })
+
+            if (Array.isArray(result) && result.length === 0) {
+                return res.status(404).send({ status: false, message: 'No Product found' })
+            }
+
+            return res.status(200).send({ status: true, message: "Product List", data: result })
+        }
+
+        let result = await productModel.find(Get)
 
         if (Array.isArray(result) && result.length === 0) {
             return res.status(404).send({ status: false, message: 'No Product found' })
@@ -218,7 +230,7 @@ const updateProduct = async function (req, res) {
 
         if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "productId is not valid" })
 
-        const findProduct = await productModel.findOne({ _id: productId,isDeleted:false})
+        const findProduct = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!findProduct) return res.status(404).send({ status: false, message: "productId does not exists" })
 
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data
@@ -243,7 +255,7 @@ const updateProduct = async function (req, res) {
         }
         //PRICE
         if (price) {
-            if(price=="") return res.status(400).send({ status: false, message: "Please provide some number in price" });
+            if ((price == "") || (price <= 0)) return res.status(400).send({ status: false, message: "Please provide some number in price" });
             if ((price).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces from price" }); }
             if (!validators.isValidPrice(price)) return res.status(400).send({ status: false, message: "Please Provide Valid price(price should be Number/Decimal)" })
             update.price = price
@@ -267,7 +279,7 @@ const updateProduct = async function (req, res) {
 
         //  isFreeShipping
         if (isFreeShipping) {
-            if(isFreeShipping=="") return res.status(400).send({status:false, message:"please provide some data in isFreeShipping"})
+            if (isFreeShipping == "") return res.status(400).send({ status: false, message: "please provide some data in isFreeShipping" })
             isFreeShipping = isFreeShipping.toLowerCase();
             if (isFreeShipping == 'true' || isFreeShipping == 'false') {
                 isFreeShipping = JSON.parse(isFreeShipping);      //convert from string to boolean
@@ -299,7 +311,7 @@ const updateProduct = async function (req, res) {
 
         if (installments) {
             if (!validators.isValidNum(installments)) return res.status(400).send({ status: false, message: "installments not valid " })
-            if(installments=="") return res.status(400).send({status:false, message:"please provide some data in installments"})
+            if (installments == "") return res.status(400).send({ status: false, message: "please provide some data in installments" })
             update.installments = installments
         }
 

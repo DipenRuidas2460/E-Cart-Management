@@ -46,7 +46,7 @@ const createOrder = async function (req, res) {
 
         for (let i = 0; i < searchCart.items.length; i++) {
             let productCheck = await productModel.findById(searchCart.items[i].productId)
-            if (!productCheck) return res.status(404).send({ status: false, message: ` product not found` })
+            if (!productCheck) return res.status(404).send({ status: false, message: `product not found` })
             if (productCheck.isDeleted == true) return res.status(404).send({ status: false, message: `This product is deleted` })
 
             totalQuantity = totalQuantity + searchCart.items[i].quantity
@@ -127,7 +127,7 @@ const updateOrder = async function (req, res) {
 
         let isOrder = await orderModel.findOne({ userId:userId, _id:orderId});
         if (!isOrder) {
-            return res.status(400).send({ status: false, message: `No such order  belongs to ${userId} ` });
+            return res.status(404).send({ status: false, message: `No such order  belongs to ${userId} ` });
         }
         // cancellable validation 
 
@@ -136,7 +136,7 @@ const updateOrder = async function (req, res) {
                 const updateorderStatus = await orderModel.findOneAndUpdate(
                     { _id: isOrder._id },
                     { $set:{status:status} },
-                    { new: true })
+                    { new: true }).populate("items.productId",{_id:1,title:1,price:1,productImage:1})
                 return res.status(200).send({ status: true, message: `Successfully updated the order details.`, data: updateorderStatus })
             
             }
@@ -157,7 +157,7 @@ const updateOrder = async function (req, res) {
         }
         if (status == "pending") { return res.status(400).send({ status: false, message: "Your order is already pending" }); }
 
-        let updated = await orderModel.findOneAndUpdate({ _id: orderId }, { status: status }, { new: true })
+        let updated = await orderModel.findOneAndUpdate({ _id: orderId }, { status: status }, { new: true }).populate("items.productId",{_id:1,title:1,price:1,productImage:1})
         return res.status(200).send({ status: true, message: "update successfull", data: updated })
 
     } catch (err) {
