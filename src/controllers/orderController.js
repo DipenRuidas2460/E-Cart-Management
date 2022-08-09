@@ -35,7 +35,7 @@ const createOrder = async function (req, res) {
         let searchCart = await cartModel.findOne({ _id: data.cartId, userId: userId })
         if (!searchCart) { return res.status(404).send({ status: false, message: `cart doesn't exists` }) }
         
-        if(searchCart.items.length === 0 ){return res.status(400).send({status:false,message:"Your Cart is Empty. You can't proceed further"})}
+        if(searchCart.items.length == 0 ){return res.status(400).send({status:false,message:"Your Cart is Empty. You can't proceed further"})}
 
         createData.items = searchCart.items
         createData.totalPrice = searchCart.totalPrice
@@ -56,14 +56,32 @@ const createOrder = async function (req, res) {
             if (typeof (cancellable) !== "boolean") return res.status(400).send({ status: false, message: "Cancellable is only Boolean value" })
         }
 
-        let filter = {}
-           filter.items=[]
-           filter.totalItems=0
-           filter.totalPrice=0
-        let cartUpdated = await cartModel .findOneAndUpdate({_id:data.cartId},filter,{new:true})
-
+        
 
         let OrderData = await orderModel.create(createData)
+        OrderData = await OrderData.populate("items.productId",{_id:1,title:1,price:1,productImage:1})
+        
+        let updatedCartData = {}
+
+        if(!Object.prototype.hasOwnProperty.call(updatedCartData,'$set')) {
+            updatedCartData['$set'] = {}
+        }
+        updatedCartData['$set']['items'] = []
+
+
+        if(!Object.prototype.hasOwnProperty.call(updatedCartData,'$set')) {
+            updatedCartData['$set'] = {}
+        }
+        updatedCartData['$set']['totalPrice'] = 0
+
+
+        if(!Object.prototype.hasOwnProperty.call(updatedCartData,'$set')) {
+            updatedCartData['$set'] = {}
+        }
+        updatedCartData['$set']['totalItems'] = 0
+
+        await cartModel .findOneAndUpdate({userId:userId},updatedCartData,{new:true})
+        
         return res.status(201).send({ status: true, message: "Successfully Order Placed", Order: OrderData })
 
     } catch (err) {
