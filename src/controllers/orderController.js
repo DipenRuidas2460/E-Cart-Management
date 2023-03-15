@@ -44,12 +44,12 @@ const createOrder = async function (req, res) {
         let totalQuantity = 0
 
 
-        for (let i = 0; i < searchCart.items.length; i++) {
-            let productCheck = await productModel.findById(searchCart.items[i].productId)
+        for (let i of searchCart.items) {
+            let productCheck = await productModel.findById(i.productId)
             if (!productCheck) return res.status(404).send({ status: false, message: `product not found` })
-            if (productCheck.isDeleted == true) return res.status(404).send({ status: false, message: `This product is deleted` })
+            if (productCheck.isDeleted === true) return res.status(404).send({ status: false, message: `This product is deleted` })
 
-            totalQuantity = totalQuantity + searchCart.items[i].quantity
+            totalQuantity = totalQuantity + i.quantity
             createData.totalQuantity = totalQuantity
         }
         if (data.cancellable) {
@@ -85,7 +85,6 @@ const createOrder = async function (req, res) {
         return res.status(201).send({ status: true, message: "Successfully Order Placed", Order: OrderData })
 
     } catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 
@@ -131,7 +130,7 @@ const updateOrder = async function (req, res) {
         }
         // cancellable validation 
 
-        if (isOrder.cancellable == false) {
+        if (isOrder.cancellable === false) {
             if(status == "completed" && isOrder.status=="pending"){
                 const updateorderStatus = await orderModel.findOneAndUpdate(
                     { _id: isOrder._id },
@@ -161,7 +160,6 @@ const updateOrder = async function (req, res) {
         return res.status(200).send({ status: true, message: "update successfull", data: updated })
 
     } catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 }

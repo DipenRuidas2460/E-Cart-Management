@@ -5,7 +5,8 @@ const orderSchema = new mongoose.Schema({
     userId: {
         type: ObjectId,
         ref: "User",
-        required: true
+        required: true,
+        unique:true
     },
     items: [{
         productId: {
@@ -17,7 +18,7 @@ const orderSchema = new mongoose.Schema({
             type: Number,
             required: true
         },
-        _id:false
+        _id: false
     }],
     totalPrice: {
         type: Number,
@@ -28,24 +29,24 @@ const orderSchema = new mongoose.Schema({
         required: true
     },
     totalQuantity: {
-            type: Number,
-            required: true
+        type: Number,
+        required: true
     },
-    cancellable:{
-        type:Boolean,
-        default:true
+    cancellable: {
+        type: Boolean,
+        default: true
     },
-    status:{
-        type:String,
+    status: {
+        type: String,
         default: "pending",
-        enum:["pending", "completed", "cancled"]
+        enum: ["pending", "completed", "cancled"]
     },
-    deletedAt:{
-        type:Date,
-        default:null
+    deletedAt: {
+        type: Date,
+        default: null
     },
-    isDeleted:{
-        type:Boolean,
+    isDeleted: {
+        type: Boolean,
         default: false
     },
 }, { timestamps: true })

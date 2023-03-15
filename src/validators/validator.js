@@ -1,9 +1,10 @@
 const isValid = function (x) {
     if (typeof x === 'undefined' || x === null) return false
-    if (typeof x != "string") return false
+    if (typeof x !== "string") return false
     if (typeof x === 'string' && x.trim().length === 0) return false
-    return true
+    return true;
 }
+
 
 const IsValidStr = function (x) {
     let strRegex = /^[a-zA-Z,\-.\s|]*$/
@@ -21,7 +22,7 @@ const isValidEmail = function (y) {
 }
 
 const isValidMobile = function (y) {
-    let mobileRegex = /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/
+    let mobileRegex = /^(?:\+\d{1,3}[- ]?)?\d{10}$/
     if (mobileRegex.test(y)) return true
 }
 
@@ -42,7 +43,6 @@ const isValidEnum = function (value) {
 
 const isValidNum = (number) => {
     if (/^\d+$/.test(number)) return true
-    return false 
 }
 
 const isValidStatus = function (status) {

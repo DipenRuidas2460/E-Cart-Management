@@ -42,9 +42,7 @@ const authorize = async function (req, res, next) {
 
         let user = newUserId._id
 
-        if (user != userLoggedIn) {
-            return res.status(403).send({ status: false, message: "You are not authorized to do this" })
-        };
+        if (user != userLoggedIn) return res.status(403).send({ status: false, message: "You are not authorized to do this" })
 
         next();
 
@@ -55,5 +53,4 @@ const authorize = async function (req, res, next) {
 
 
 
-module.exports.authenticate = authenticate
-module.exports.authorize = authorize
+module.exports = {authenticate, authorize}

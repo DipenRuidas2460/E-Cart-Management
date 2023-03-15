@@ -27,7 +27,7 @@ const createProduct = async function (req, res) {
 
         //PRICE
         if (!price) return res.status(400).send({ status: false, message: "Price is required" })
-        if ((price == "")||(price<=0)) return res.status(400).send({ status: false, message: "Please provide some number in price" });
+        if ((price == "") || (price <= 0)) return res.status(400).send({ status: false, message: "Please provide some number in price" });
         if ((price).includes(" ")) { return res.status(400).send({ status: false, message: "Please remove any empty spaces from price" }); }
         if (!validators.isValidPrice(price)) return res.status(400).send({ status: false, message: "Please Provide Valid price(price should be Number/Decimal)" })
 
@@ -79,7 +79,7 @@ const createProduct = async function (req, res) {
         if (!availableSizes) return res.status(400).send({ status: false, message: "AvailableSize is required" })
 
         if (!(validators.isValid(availableSizes))) return res.status(400).send({ status: false, message: "Please provide availableSizes in string format" })
-        if (availableSizes.toUpperCase().trim().split(",").map(value => validators.isValidEnum(value)).filter(item => item == false).length !== 0) {
+        if (availableSizes.toUpperCase().trim().split(",").map(value => validators.isValidEnum(value)).filter(item => item === false).length !== 0) {
             return res.status(400).send({ status: false, message: "Enum should be valid" })
         }
 
@@ -95,7 +95,6 @@ const createProduct = async function (req, res) {
 
 
     } catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 }
@@ -114,15 +113,17 @@ const getProductByQuery = async function (req, res) {
         let { size, name, priceGreaterThan, priceLessThan, priceSort } = data
 
         /// size validation //
-        let Get = {}
+        let obj1 = {}
 
         if (size) {
             if (!(validators.isValid(size))) {
                 return res.status(400).send({ status: false, message: "Please provide availableSize" })
             }
 
-            let sizes = data.size.split(",").map(x => x.trim())
-            Get.availableSizes = { $all: sizes }
+            else {
+                let sizes = data.size.split(",").map(x => x.trim())
+                obj1.availableSizes = { $all: sizes }
+            }
 
         }
 
@@ -130,36 +131,34 @@ const getProductByQuery = async function (req, res) {
 
         if (name) {
             if (!validators.isValid(name)) return res.status(400).send({ status: false, message: "Please enter correct name" })
-            Get.title = { $regex: name, $options: 'i' }
+            else obj1.title = { $regex: name, $options: 'i' }
         }
 
         //price validation //
         if (priceGreaterThan) {
             let greater = parseInt(priceGreaterThan)
             if (typeof greater !== "number") return res.status(400).send({ status: false, message: "Please enter price in number" })
-            Get.price = { $gt: `${greater}` }
+            else obj1.price = { $gt: `${greater}` }
         }
 
         if (priceLessThan) {
             let lesser = parseInt(priceLessThan)
             if (typeof lesser !== "number") return res.status(400).send({ status: false, message: "Please enter price in number" })
-            Get.price = {
-                $lt: `${lesser}`
-            }
+            else obj1.price = { $lt: `${lesser}` }
         }
 
         if (priceGreaterThan && priceLessThan) {
             let greater = parseInt(priceGreaterThan)
             let lesser = parseInt(priceLessThan)
-            Get.price = { $gt: `${greater}`, $lt: `${lesser}` }
+            obj1.price = { $gt: `${greater}`, $lt: `${lesser}` }
         }
 
-        Get.isDeleted = false
+        obj1.isDeleted = false
 
         if (validators.isValid(priceSort)) {
             if (!(priceSort == 1 || priceSort == -1)) return res.status(400).send({ status: false, message: 'priceSort Should be 1 or -1' })
 
-            let result = await productModel.find(Get).sort({ price: priceSort })
+            let result = await productModel.find(obj1).sort({ price: priceSort })
 
             if (Array.isArray(result) && result.length === 0) {
                 return res.status(404).send({ status: false, message: 'No Product found' })
@@ -168,7 +167,7 @@ const getProductByQuery = async function (req, res) {
             return res.status(200).send({ status: true, message: "Product List", data: result })
         }
 
-        let result = await productModel.find(Get)
+        let result = await productModel.find(obj1)
 
         if (Array.isArray(result) && result.length === 0) {
             return res.status(404).send({ status: false, message: 'No Product found' })
@@ -179,7 +178,6 @@ const getProductByQuery = async function (req, res) {
 
     }
     catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 }
@@ -206,7 +204,6 @@ const getProductByParams = async function (req, res) {
         res.status(200).send({ status: true, message: "Product Found successfully", data: data })
     }
     catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 
@@ -293,7 +290,7 @@ const updateProduct = async function (req, res) {
         //PRODUCT IMAGE
 
         if (files && files.length > 0) {
-            if (!files || files.length === 0) return res.status(400).send({ status: false, message: "Please add some file" })
+            if (files.length === 0) return res.status(400).send({ status: false, message: "Please add some file" })
             let uploadedFileURL = await aws.uploadFile(files[0])
             update.productImage = uploadedFileURL
             if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png|\.jfif)$/i.test(update.productImage)) return res.status(400).send({ status: false, message: "Please provide profileImage in correct format like jpeg,png,jpg,gif,bmp etc" })
@@ -318,7 +315,7 @@ const updateProduct = async function (req, res) {
         //AVAILABLESIZES
         if (availableSizes) {
             if (!(validators.isValid(availableSizes))) return res.status(400).send({ status: false, message: "Please provide availableSize" })
-            if (availableSizes.toUpperCase().trim().split(",").map(value => validators.isValidEnum(value)).filter(item => item == false).length !== 0)
+            if (availableSizes.toUpperCase().trim().split(",").map(value => validators.isValidEnum(value)).filter(item => item === false).length !== 0)
                 return res.status(400).send({ status: false, message: "Enum should be valid" })
 
             const availableSize = availableSizes.toUpperCase().trim().split(",").map(value => value.trim()) //converting in array
@@ -326,15 +323,11 @@ const updateProduct = async function (req, res) {
 
         }
 
-
-
         const updatedProduct = await productModel.findOneAndUpdate({ _id: productId }, { $set: { ...update }, $addToSet: { availableSizes } }, { new: true })
         return res.status(200).send({ status: true, message: "Product updated Successfully", data: updatedProduct })
 
-
     }
     catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message })
     }
 
@@ -355,13 +348,12 @@ const deleteProduct = async function (req, res) {
         let data = await productModel.findOne({ _id: productId });
         if (!data) return res.status(404).send({ status: false, message: "No such product found" })
 
-        if (data.isDeleted == true) return res.status(404).send({ status: false, message: "Product data already deleted" })
+        if (data.isDeleted === true) return res.status(404).send({ status: false, message: "Product data already deleted" })
 
-        let Update = await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: Date.now() }, { new: true });
+        await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: Date.now() }, { new: true });
         return res.status(200).send({ status: true, message: "successfully deleted product", });
     } catch (err) {
-        console.log(err)
-        res.status(500).send({ status: false, Error: err.message });
+        return res.status(500).send({ status: false, message: "Error", Error: err.message });
     }
 }
 

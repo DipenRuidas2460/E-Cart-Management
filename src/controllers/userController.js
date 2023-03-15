@@ -126,7 +126,7 @@ const createUser = async function (req, res) {
 
             else {
                 let pinCode = parseInt(address.shipping.pincode)
-                if (!(/^[1-9][0-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                if (!(/^[1-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
 
             }
         }
@@ -152,7 +152,7 @@ const createUser = async function (req, res) {
             if (!address.billing.pincode) return res.status(400).send({ status: false, message: "pincode can't be empty" })
             else {
                 let pinCode = parseInt(address.billing.pincode)
-                if (!(/^[1-9][0-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                if (!(/^[1-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
 
             }
         }
@@ -165,7 +165,6 @@ const createUser = async function (req, res) {
 
 
     } catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message });
     }
 }//____+++++++++++++++++++------------------++++++++++++++++++++----------------------++++++++++++++++++++++_----------------------//
@@ -234,7 +233,6 @@ const loginUser = async function (req, res) {
     }
 
     catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: err.message })
     }
 }
@@ -255,15 +253,11 @@ const getProfile = async function (req, res) {
 
         if (!userId) return res.status(400).send({ status: false, message: "Please provide userId in params" })
 
-        if (!mongoose.isValidObjectId(userId)) {
-            return res.status(400).send({ status: false, message: "Invalid userId in params" })
-        }
-
+        if (!mongoose.isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Invalid userId in params" })
+        
         const findUserProfile = await userModel.findOne({ _id: userId })  // ===== searching user ======//
 
-        if (!findUserProfile) {
-            return res.status(404).send({ status: false, message: "User doesn't exists by userId" })  // === user not found === //
-        }
+        if (!findUserProfile) return res.status(404).send({ status: false, message: "User doesn't exists by userId" })  // === user not found === //
 
         return res.status(200).send({ status: true, message: "Profile found successfully.", data: findUserProfile })
 
@@ -357,7 +351,7 @@ const updateUser = async function (req, res) {
             update.password = password
         }
         if (files && files.length > 0) {
-            if (!files || files.length === 0) return res.status(400).send({ status: false, message: "Please add some file" })
+            if (files.length === 0) return res.status(400).send({ status: false, message: "Please add some file" })
             let uploadedFileURL = await aws.uploadFile(files[0])
             update.profileImage = uploadedFileURL
             if (!/(\.jpg|\.jpeg|\.bmp|\.gif|\.png|\.jfif)$/i.test(update.profileImage)) return res.status(400).send({ status: false, message: "Please provide profileImage in correct format like jpeg,png,jpg,gif,bmp etc" })        
@@ -391,7 +385,7 @@ const updateUser = async function (req, res) {
 
                 if (address.shipping.pincode) {
                     let pinCode = parseInt(address.shipping.pincode)
-                    if (!(/^[1-9][0-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                    if (!(/^[1-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
                     update["address.shipping.pincode"] = pinCode
                 }
             }
@@ -412,18 +406,17 @@ const updateUser = async function (req, res) {
 
                 if (address.billing.pincode) {
                     let pinCode = parseInt(address.billing.pincode)
-                    if (!(/^[1-9][0-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
+                    if (!(/^[1-9]{5}$/.test(pinCode))) return res.status(400).send({ status: false, message: "provide a valid pincode." })
                     update["address.billing.pincode"] = pinCode
                 }
             }
 
         }
 
-        let updatedUserProfile = await userModel.findOneAndUpdate({ _id: userId }, update, { new: true })
+        let updatedUserProfile = await userModel.findOneAndUpdate({ _id: userId },update, { new: true })
         return res.status(200).send({ status: true, message: "User profile updated", data: updatedUserProfile })
 
     } catch (err) {
-        console.log(err)
         return res.status(500).send({ status: false, message: "Error", error: err.message })
     }
 }
